@@ -5,6 +5,14 @@ from utils import *
 
 vec = pg.math.Vector2
 
+def collide_hit_rect(one,two):
+    return one.hit_rect.colliderect(two.rect)
+
+def collide_with_wall(sprite,group,dir):
+    if dir == 'x':
+        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
+        print(hits)
+
 class Player(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites
@@ -15,6 +23,7 @@ class Player(Sprite):
         self.rect = self.image.get_rect()
         self.vel = vec(0,0)
         self.pos = vec(x,y) * TILESIZE
+        self.hit_rect = PLAYER_HIT_RECT
         self.i_frames = Cooldown(500)
         self.i_frames.start()
 

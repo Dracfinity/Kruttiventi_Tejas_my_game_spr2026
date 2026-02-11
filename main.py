@@ -112,6 +112,7 @@ class Game:
         for i in self.all_mobs:
             i.game = self
 
+        #update all
         self.player.get_keys()
         self.all_sprites.update()
 

@@ -1,19 +1,24 @@
+import pygame as pg
+
 WIDTH = 800
 HEIGHT = 600
 TITLE = "Game Development"
 FPS = 60
-TILESIZE = 32
 
-
-# color values
-
+# color values,
 # tuple storing RGB values
 BLUE = (0,0,255)
 WHITE = (255,255,255)
 RED = (255,0,0)
 GREEN = (0,255,0)
 
+#General
 FRICTION = 0.95
-PLAYERSPEED = 1
+TILESIZE = 32
 
+#Player Values
+PLAYERSPEED = 1
+PLAYER_HIT_RECT = pg.Rect(0,0,TILESIZE,TILESIZE)
+
+#Mobs
 MOBSPEED = 2
