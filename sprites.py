@@ -50,8 +50,8 @@ class Player(Sprite):
 
 
         #Adds Friction
-        self.vel.x *= PLAYERFRICTION
-        self.vel.y *= PLAYERFRICTION
+        self.vel.x *= FRICTION
+        self.vel.y *= FRICTION
 
         #Moves PLAYERSPEED per second
         if(self.vel.x != 0 or self.vel.y != 0):
@@ -60,9 +60,10 @@ class Player(Sprite):
 
 
     def update(self):
-        #Always Centered, and has a dynamic motion based on vel
         self.rect.x = WIDTH/2 - (self.vel.x * 5)
         self.rect.y = HEIGHT/2 - (self.vel.y * 5)
+        Camera.x = self.pos.x + (self.vel.x * 5)
+        Camera.y = self.pos.y + (self.vel.y * 5)
 
 class Mob(Sprite):
     def __init__(self,game,x,y):
@@ -75,9 +76,13 @@ class Mob(Sprite):
         self.vel = vec(0,0)
         self.pos = vec(x,y) * TILESIZE
     def update(self):
-        self.pos.x += (self.game.player.pos.x-self.pos.x+400+(TILESIZE/2))
+        #Mob AI
+        self.vel.x += (self.vel.x +(self.game.player.pos.x-self.pos.x)/self.pos.magnitude()*MOBSPEED)*FRICTION
+        self.vel.y = (self.vel.y + (self.game.player.pos.y-self.pos.y)/self.pos.magnitude()*MOBSPEED)*FRICTION
+        self.pos.x += self.vel.x
+        self.pos.y += self.vel.y
         #Dynamic Camera Based Position
-        self.rect.center = (self.pos.x - self.game.player.pos.x,self.pos.y - self.game.player.pos.y)
+        self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
 
 class Wall(Sprite):
     def __init__(self, game, x, y):
@@ -91,6 +96,6 @@ class Wall(Sprite):
         self.pos = vec(x,y) * TILESIZE
         self.rect.center = self.pos
     def update(self):
-        self.rect.center = (self.pos.x - self.game.player.pos.x,self.pos.y - self.game.player.pos.y)
+        self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
 
 

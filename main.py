@@ -117,7 +117,8 @@ class Game:
 
     
     def draw(self):
-        self.screen.fill(BLUE)
+        self.screen.fill((0,0,0))
+        pg.draw.rect(self.screen,(100,50,25),(0-Camera.x+(WIDTH)/2,0-Camera.y+(HEIGHT)/2,self.map.width,self.map.height))
         self.draw_text(str(int(self.player.vel.x*1000)/1000)+","+str(int(self.player.vel.y*1000)/1000), 12, WHITE, WIDTH/5, HEIGHT/20)
         #self.draw_text(, 24, WHITE, WIDTH/2, 2*HEIGHT/4)
         self.all_sprites.draw(self.screen)

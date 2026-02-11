@@ -1,6 +1,8 @@
 import pygame as pg
 from settings import *
 
+Camera = pg.math.Vector2(0,0)
+
 class Map:
     def __init__(self, filename):
         self.data = []
