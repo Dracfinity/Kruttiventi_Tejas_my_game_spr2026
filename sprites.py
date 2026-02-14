@@ -6,12 +6,38 @@ from utils import *
 vec = pg.math.Vector2
 
 def collide_hit_rect(one,two):
+    #detect collisions
     return one.hit_rect.colliderect(two.rect)
 
 def collide_with_wall(sprite,group,dir):
+    #Collision by finding position and moving it backwards
+    #Xcollide
     if dir == 'x':
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
-        print(hits)
+        if hits:
+            #Right
+            if hits[0].rect.centerx > sprite.hit_rect.centerx:
+                sprite.pos.x = hits[0].rect.right - sprite.hit_rect.width / 2
+            #Left
+            if hits[0].rect.centerx < sprite.hit_rect.centerx:
+                sprite.pos.x = hits[0].rect.right + sprite.hit_rect.width / 2
+            sprite.vel.x = 0
+            sprite.hit_rect.centerx = sprite.pos.x
+    #Ycollide
+    if dir == 'y':
+        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
+        if hits:
+            #Top
+            if hits[0].rect.centery > sprite.hit_rect.centery:
+                sprite.pos.y = hits[0].rect.top - sprite.hit_rect.height / 2
+            #Bottom
+            if hits[0].rect.centery < sprite.hit_rect.centery:
+                sprite.pos.y = hits[0].rect.top + sprite.hit_rect.height / 2
+            sprite.vel.y = 0
+            sprite.hit_rect.centery = sprite.pos.y
+
+    
+
 
 class Player(Sprite):
     def __init__(self, game, x, y):
@@ -24,6 +50,7 @@ class Player(Sprite):
         self.vel = vec(0,0)
         self.pos = vec(x,y) * TILESIZE
         self.hit_rect = PLAYER_HIT_RECT
+        #Immunity Frames for damage
         self.i_frames = Cooldown(500)
         self.i_frames.start()
 
@@ -69,10 +96,14 @@ class Player(Sprite):
 
 
     def update(self):
-        self.rect.x = WIDTH/2 - (self.vel.x * 5)
-        self.rect.y = HEIGHT/2 - (self.vel.y * 5)
         Camera.x = self.pos.x + (self.vel.x * 5)
         Camera.y = self.pos.y + (self.vel.y * 5)
+        self.hit_rect.centerx = self.pos.x
+        collide_with_wall(self,self.game.all_walls,"x")
+        self.hit_rect.centery = self.pos.y
+        collide_with_wall(self,self.game.all_walls,"y")
+        self.rect.x = WIDTH/2 - (self.vel.x * 5)
+        self.rect.y = HEIGHT/2 - (self.vel.y * 5)
 
 class Mob(Sprite):
     def __init__(self,game,x,y):
@@ -86,11 +117,13 @@ class Mob(Sprite):
         self.pos = vec(x,y) * TILESIZE
     def update(self):
         #Mob AI
-        self.vel.x += (self.vel.x +(self.game.player.pos.x-self.pos.x)/self.pos.magnitude()*MOBSPEED)*FRICTION
+        """
+        self.vel.x = (self.vel.x +(self.game.player.pos.x-self.pos.x)/self.pos.magnitude()*MOBSPEED)*FRICTION
         self.vel.y = (self.vel.y + (self.game.player.pos.y-self.pos.y)/self.pos.magnitude()*MOBSPEED)*FRICTION
         self.pos.x += self.vel.x
         self.pos.y += self.vel.y
         #Dynamic Camera Based Position
+        """
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
 
 class Wall(Sprite):

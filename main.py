@@ -60,7 +60,7 @@ class Game:
         self.all_walls = pg.sprite.Group()
         for row, tiles in enumerate(self.map.data):
             for col, tile in enumerate(tiles):
-                if tile == '1':
+                if tile == '9':
                     Wall(self,col,row)
                 if tile == 'P':
                     self.player = Player(self,col,row)
@@ -123,6 +123,7 @@ class Game:
         self.draw_text(str(int(self.player.vel.x*1000)/1000)+","+str(int(self.player.vel.y*1000)/1000), 12, WHITE, WIDTH/5, HEIGHT/20)
         #self.draw_text(, 24, WHITE, WIDTH/2, 2*HEIGHT/4)
         self.all_sprites.draw(self.screen)
+        pg.draw.rect(self.screen,BLUE,self.player.hit_rect)
         pg.display.flip()
 
     def draw_text(self, text, size, color, x, y):
