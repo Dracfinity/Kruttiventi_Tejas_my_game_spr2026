@@ -108,7 +108,7 @@ class Game:
         else:
             self.player.image.fill((255,150,150))
 
-        #update monsters game awareness to allow for monster ai(not generative ai thank god)    
+        #update monsters game awareness to allow for monster pathfinding(extremely basic) 
         for i in self.all_mobs:
             i.game = self
 

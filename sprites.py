@@ -17,24 +17,24 @@ def collide_with_wall(sprite,group,dir):
         if hits:
             #Right
             if hits[0].rect.centerx > sprite.hit_rect.centerx:
-                sprite.pos.x = hits[0].rect.left - sprite.hit_rect.width / 2
+                sprite.pos.x -= (hits[0].rect.left - sprite.hit_rect.width / 2) - WIDTH/2
             #Left
             if hits[0].rect.centerx < sprite.hit_rect.centerx:
-                sprite.pos.x = hits[0].rect.right + sprite.hit_rect.width / 2
+                sprite.pos.x -= (hits[0].rect.right - sprite.hit_rect.width / 2) - WIDTH/2
             sprite.vel.x = 0
-            sprite.hit_rect.centerx = sprite.pos.x
+            sprite.hit_rect.centerx = sprite.rect.centerx
     #Ycollide
     if dir == 'y':
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
         if hits:
             #Top
             if hits[0].rect.centery > sprite.hit_rect.centery:
-                sprite.pos.y = hits[0].rect.top - sprite.hit_rect.height / 2
+                sprite.pos.y -= (hits[0].rect.top - sprite.hit_rect.height / 2) - HEIGHT/2
             #Bottom
             if hits[0].rect.centery < sprite.hit_rect.centery:
-                sprite.pos.y = hits[0].rect.bottom + sprite.hit_rect.height / 2
+                sprite.pos.y -= (hits[0].rect.bottom - sprite.hit_rect.height / 2) - HEIGHT/2
             sprite.vel.y = 0
-            sprite.hit_rect.centery = sprite.pos.y
+            sprite.hit_rect.centery = sprite.rect.centery
 
     
 
@@ -98,9 +98,9 @@ class Player(Sprite):
     def update(self):
         Camera.x = self.pos.x
         Camera.y = self.pos.y
-        self.hit_rect.centerx = self.pos.x
+        self.hit_rect.centerx = self.rect.centerx
         collide_with_wall(self,self.game.all_walls,"x")
-        self.hit_rect.centery = self.pos.y
+        self.hit_rect.centery = self.rect.centery
         collide_with_wall(self,self.game.all_walls,"y")
         self.rect.x = WIDTH/2
         self.rect.y = HEIGHT/2
