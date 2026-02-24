@@ -17,11 +17,11 @@ def collide_with_wall(sprite,group,dir):
         if hits:
             #Right
             if hits[0].rect.centerx > sprite.hit_rect.centerx:
-                sprite.pos.x -= (hits[0].rect.left - sprite.hit_rect.width / 2) - WIDTH/2
+                sprite.pos.x -= (hits[0].rect.left - sprite.hit_rect.width / 2) - sprite.rect.centerx
             #Left
             if hits[0].rect.centerx < sprite.hit_rect.centerx:
-                sprite.pos.x -= (hits[0].rect.right - sprite.hit_rect.width / 2) - WIDTH/2
-            sprite.vel.x = 0
+                sprite.pos.x -= (hits[0].rect.right - sprite.hit_rect.width / 2) - sprite.rect.centerx
+            sprite.vel.x *= -1
             sprite.hit_rect.centerx = sprite.rect.centerx
     #Ycollide
     if dir == 'y':
@@ -29,10 +29,10 @@ def collide_with_wall(sprite,group,dir):
         if hits:
             #Top
             if hits[0].rect.centery > sprite.hit_rect.centery:
-                sprite.pos.y -= (hits[0].rect.top - sprite.hit_rect.height / 2) - HEIGHT/2
+                sprite.pos.y -= (hits[0].rect.top - sprite.hit_rect.height / 2) - sprite.rect.centery
             #Bottom
             if hits[0].rect.centery < sprite.hit_rect.centery:
-                sprite.pos.y -= (hits[0].rect.bottom - sprite.hit_rect.height / 2) - HEIGHT/2
+                sprite.pos.y -= (hits[0].rect.bottom - sprite.hit_rect.height / 2) - sprite.rect.centery
             sprite.vel.y = 0
             sprite.hit_rect.centery = sprite.rect.centery
 
