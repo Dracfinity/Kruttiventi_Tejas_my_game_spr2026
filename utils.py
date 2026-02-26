@@ -1,5 +1,6 @@
 import pygame as pg
 from settings import *
+from pygame.sprite import Sprite
 
 Camera = pg.math.Vector2(0,0)
 
