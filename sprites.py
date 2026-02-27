@@ -2,8 +2,11 @@ import pygame as pg
 from pygame.sprite import Sprite
 from settings import *
 from utils import *
+from os import path
 
 vec = pg.math.Vector2
+
+
 
 def collide_hit_rect(one,two):
     #detect collisions
@@ -44,6 +47,8 @@ class Player(Sprite):
         self.groups = game.all_sprites
         Sprite.__init__(self,self.groups)
         self.game = game
+        self.spritesheet = Spritesheet(path.join(self.game.img_dir, "Spritesheet.png"))
+        self.load_images()
         self.image = pg.Surface((TILESIZE,TILESIZE))
         self.image.fill(WHITE)
         self.rect = self.image.get_rect()
@@ -53,6 +58,10 @@ class Player(Sprite):
         #Immunity Frames for damage
         self.i_frames = Cooldown(500)
         self.i_frames.start()
+        self.jumping = False
+        self.walking = False
+        self.last_update = 0
+        self.current_frame = 0
 
     def get_keys(self):
         keys = pg.key.get_pressed()
@@ -104,6 +113,24 @@ class Player(Sprite):
         collide_with_wall(self,self.game.all_walls,"y")
         self.rect.x = WIDTH/2
         self.rect.y = HEIGHT/2
+        self.animate()
+
+
+    def load_images(self):
+        self.standing_frames = [self.spritesheet.get_image(0,0,TILESIZE,TILESIZE),
+                                self.spritesheet.get_image(1*TILESIZE,0,TILESIZE,TILESIZE)]
+        for frame in self.standing_frames:
+            frame.set_colorkey(BLACK)
+
+    def animate(self):
+        now = pg.time.get_ticks()
+        if not self.jumping and not self.walking:
+            if now - self.last_update > 350:
+                self.last_update = now
+                self.current_frame = (self.current_frame+1) % len(self.standing_frames)
+                rect = self.rect
+                self.rect = self.image.get_rect()
+                self.rect = rect
 
 class Mob(Sprite):
     def __init__(self,game,x,y):
@@ -131,8 +158,7 @@ class Wall(Sprite):
         self.groups = game.all_sprites, game.all_walls
         Sprite.__init__(self,self.groups)
         self.game = game
-        self.image = pg.Surface((TILESIZE,TILESIZE))
-        self.image.fill(GREEN)
+        self.image = game.wall_img
         self.rect = self.image.get_rect()
         self.vel = vec(0,0)
         self.pos = vec(x,y) * TILESIZE
