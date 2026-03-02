@@ -4,6 +4,7 @@ from pygame.sprite import Sprite
 
 Camera = pg.math.Vector2(0,0)
 
+#A map to let you load a level from text
 class Map:
     def __init__(self, filename):
         self.data = []
@@ -18,18 +19,20 @@ class Map:
         self.width = self.tilewidth * TILESIZE
         self.height = self.tileheight * TILESIZE
 
+#A spritesheet to make a set of images and sprites from one png
 class Spritesheet:
     def __init__(self, filename):
-        self.spritesheet = pg.image.load(filename).convert()
-    def get_image(self, x, y,width,height):
-        image = pg.Surface((width, height))
+        self.spritesheet = pg.image.load(filename).convert_alpha()
+
+    def get_image(self, x, y, width, height):
+        image = pg.Surface((width, height), pg.SRCALPHA)
         image.blit(self.spritesheet, (0,0), (x,y, width, height))
         new_image = pg.transform.scale(image, (width, height))
         image = new_image
         return image
 
         
-
+#A cooldown to let you set times between actions can occur
 class Cooldown:
     def __init__(self, time):
         self.start_time = 0

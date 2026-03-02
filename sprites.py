@@ -3,6 +3,7 @@ from pygame.sprite import Sprite
 from settings import *
 from utils import *
 from os import path
+from math import acos
 
 vec = pg.math.Vector2
 
@@ -20,10 +21,10 @@ def collide_with_wall(sprite,group,dir):
         if hits:
             #Right
             if hits[0].rect.centerx > sprite.hit_rect.centerx:
-                sprite.pos.x -= hits[0].rect.left + (sprite.hit_rect.width / 2) - sprite.rect.centerx
+                sprite.pos.x -= hits[0].rect.left - sprite.rect.right + TILESIZE/2
             #Left
             if hits[0].rect.centerx < sprite.hit_rect.centerx:
-                sprite.pos.x -= hits[0].rect.right - (sprite.hit_rect.width / 2) - sprite.rect.centerx
+                sprite.pos.x -= hits[0].rect.right - sprite.rect.left - TILESIZE/2
             sprite.vel.x *= -1
             sprite.hit_rect.centerx = sprite.rect.centerx
     #Ycollide
@@ -32,10 +33,10 @@ def collide_with_wall(sprite,group,dir):
         if hits:
             #Top
             if hits[0].rect.centery > sprite.hit_rect.centery:
-                sprite.pos.y -= hits[0].rect.top + (sprite.hit_rect.height / 2) - sprite.rect.centery
+                sprite.pos.y -= hits[0].rect.top - sprite.rect.bottom + TILESIZE/2
             #Bottom
             if hits[0].rect.centery < sprite.hit_rect.centery:
-                sprite.pos.y -= hits[0].rect.bottom - (sprite.hit_rect.height / 2) - sprite.rect.centery
+                sprite.pos.y -= hits[0].rect.bottom - sprite.rect.top - TILESIZE/2
             sprite.vel.y = 0
             sprite.hit_rect.centery = sprite.rect.centery
 
@@ -49,8 +50,7 @@ class Player(Sprite):
         self.game = game
         self.spritesheet = Spritesheet(path.join(self.game.img_dir, "Spritesheet.png"))
         self.load_images()
-        self.image = pg.Surface((TILESIZE,TILESIZE))
-        self.image.fill(WHITE)
+        self.image = self.standing_frames[0]
         self.rect = self.image.get_rect()
         self.vel = vec(0,0)
         self.pos = vec(x,y) * TILESIZE
@@ -58,12 +58,21 @@ class Player(Sprite):
         #Immunity Frames for damage
         self.i_frames = Cooldown(500)
         self.i_frames.start()
+        #states, will be removed soon
         self.jumping = False
         self.walking = False
+        #frames for animated updates
         self.last_update = 0
         self.current_frame = 0
+        #different actions and states the player can be in
+        self.state = {
+            "jumping":False,
+            "walking":False,
+            "idling":False
+        }
 
     def get_keys(self):
+        #movement
         keys = pg.key.get_pressed()
 
         wasdnum = 0
@@ -117,20 +126,24 @@ class Player(Sprite):
 
 
     def load_images(self):
-        self.standing_frames = [self.spritesheet.get_image(0,0,TILESIZE,TILESIZE),
-                                self.spritesheet.get_image(1*TILESIZE,0,TILESIZE,TILESIZE)]
+        self.standing_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE), 
+                                self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)]
         for frame in self.standing_frames:
             frame.set_colorkey(BLACK)
+        self.dash_frames = [
+            
+        ]
 
     def animate(self):
         now = pg.time.get_ticks()
         if not self.jumping and not self.walking:
-            if now - self.last_update > 350:
+            if now - self.last_update > 3500:
                 self.last_update = now
-                self.current_frame = (self.current_frame+1) % len(self.standing_frames)
-                rect = self.rect
+                self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
+                bottom = self.rect.bottom
+                self.image = pg.transform.rotate(self.standing_frames[self.current_frame], self.vel.angle())
                 self.rect = self.image.get_rect()
-                self.rect = rect
+                self.rect.bottom = bottom
 
 class Mob(Sprite):
     def __init__(self,game,x,y):
@@ -149,8 +162,8 @@ class Mob(Sprite):
         self.vel.y = (self.vel.y + (self.game.player.pos.y-self.pos.y)/self.pos.magnitude()*MOBSPEED)*FRICTION
         self.pos.x += self.vel.x
         self.pos.y += self.vel.y
-        #Dynamic Camera Based Position
         """
+        #Dynamic Camera Based Position
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
 
 class Wall(Sprite):
@@ -164,6 +177,7 @@ class Wall(Sprite):
         self.pos = vec(x,y) * TILESIZE
         self.rect.center = self.pos
     def update(self):
+        #Dynamic Camera Based Position
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
 
 

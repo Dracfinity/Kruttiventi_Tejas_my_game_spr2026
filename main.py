@@ -105,12 +105,9 @@ class Game:
     def update(self):
         #immunity frames
         if(self.player.i_frames.ready()):
-            self.player.image.fill((255,255,255))
             if(bool(len(pg.sprite.spritecollide(self.player,self.all_mobs,False)))):
                 print("collision")
                 self.player.i_frames.start()
-        else:
-            self.player.image.fill((255,150,150))
 
         #update monsters game awareness to allow for monster pathfinding(extremely basic) 
         for i in self.all_mobs:
@@ -124,10 +121,10 @@ class Game:
     def draw(self):
         self.screen.fill((0,0,0))
         pg.draw.rect(self.screen,(50,50,50),(0-Camera.x+(WIDTH)/2,0-Camera.y+(HEIGHT)/2,self.map.width,self.map.height))
-        self.draw_text(str(int(self.player.vel.x*1000)/1000)+","+str(int(self.player.vel.y*1000)/1000), 12, WHITE, WIDTH/5, HEIGHT/20)
+        #self.draw_text(str(int(self.player.vel.x*1000)/1000)+","+str(int(self.player.vel.y*1000)/1000), 12, WHITE, WIDTH/5, HEIGHT/20)
         #self.draw_text(, 24, WHITE, WIDTH/2, 2*HEIGHT/4)
         self.all_sprites.draw(self.screen)
-        pg.draw.rect(self.screen,BLUE,self.player.hit_rect)
+        #pg.draw.rect(self.screen,BLUE,self.player.hit_rect)
         pg.display.flip()
 
     def draw_text(self, text, size, color, x, y):
