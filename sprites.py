@@ -21,11 +21,12 @@ def collide_with_wall(sprite,group,dir):
         if hits:
             #Right
             if hits[0].rect.centerx > sprite.hit_rect.centerx:
-                sprite.pos.x -= hits[0].rect.left - sprite.rect.right + TILESIZE/2
+                sprite.pos.x -= hits[0].rect.left - sprite.rect.centerx - sprite.vel.x #hits[0].rect.left - sprite.rect.right - sprite.vel.x
             #Left
             if hits[0].rect.centerx < sprite.hit_rect.centerx:
-                sprite.pos.x -= hits[0].rect.right - sprite.rect.left - TILESIZE/2
-            sprite.vel.x *= -1
+                sprite.pos.x -= hits[0].rect.right - sprite.rect.centerx - sprite.vel.x #hits[0].rect.right - sprite.rect.left - sprite.vel.x
+
+            sprite.vel.x *= 0.1
             sprite.hit_rect.centerx = sprite.rect.centerx
     #Ycollide
     if dir == 'y':
@@ -33,11 +34,11 @@ def collide_with_wall(sprite,group,dir):
         if hits:
             #Top
             if hits[0].rect.centery > sprite.hit_rect.centery:
-                sprite.pos.y -= hits[0].rect.top - sprite.rect.bottom + TILESIZE/2
+                sprite.pos.y -= hits[0].rect.top - sprite.rect.centery - sprite.vel.y
             #Bottom
             if hits[0].rect.centery < sprite.hit_rect.centery:
-                sprite.pos.y -= hits[0].rect.bottom - sprite.rect.top - TILESIZE/2
-            sprite.vel.y = 0
+                sprite.pos.y -= hits[0].rect.bottom - sprite.rect.centery - sprite.vel.y
+            sprite.vel.y *= 0.1
             sprite.hit_rect.centery = sprite.rect.centery
 
     
@@ -70,12 +71,20 @@ class Player(Sprite):
             "walking":False,
             "idling":False
         }
+        #FireRate
+        self.firerate = Cooldown(500)
+        self.firerate.start()
 
     def get_keys(self):
         #movement
         keys = pg.key.get_pressed()
 
         wasdnum = 0
+        if keys[pg.K_f]:
+            if self.firerate.ready():
+                print("Fired")
+                p = BaseProjectile(self.game,self.pos.x,self.pos.y,1,0)
+                self.firerate.start()
         if keys[pg.K_w]:
             wasdnum +=1
         if keys[pg.K_a]:
@@ -129,7 +138,7 @@ class Player(Sprite):
         self.standing_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE), 
                                 self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)]
         for frame in self.standing_frames:
-            frame.set_colorkey(BLACK)
+            frame.set_colorkey(WHITE)
         self.dash_frames = [
             
         ]
@@ -137,13 +146,10 @@ class Player(Sprite):
     def animate(self):
         now = pg.time.get_ticks()
         if not self.jumping and not self.walking:
-            if now - self.last_update > 3500:
+            if now - self.last_update > 100:
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
-                bottom = self.rect.bottom
-                self.image = pg.transform.rotate(self.standing_frames[self.current_frame], self.vel.angle())
-                self.rect = self.image.get_rect()
-                self.rect.bottom = bottom
+                self.image = pg.transform.rotate(self.standing_frames[self.current_frame], self.vel.angle_to(vec(1,0)))
 
 class Mob(Sprite):
     def __init__(self,game,x,y):
@@ -157,12 +163,28 @@ class Mob(Sprite):
         self.pos = vec(x,y) * TILESIZE
     def update(self):
         #Mob AI
-        """
-        self.vel.x = (self.vel.x +(self.game.player.pos.x-self.pos.x)/self.pos.magnitude()*MOBSPEED)*FRICTION
-        self.vel.y = (self.vel.y + (self.game.player.pos.y-self.pos.y)/self.pos.magnitude()*MOBSPEED)*FRICTION
+        self.vel.x = (self.vel.x +((self.game.player.pos.x-self.pos.x)/self.pos.magnitude())*MOBSPEED)*FRICTION
+        self.vel.y = (self.vel.y + ((self.game.player.pos.y-self.pos.y)/self.pos.magnitude())*MOBSPEED)*FRICTION
         self.pos.x += self.vel.x
         self.pos.y += self.vel.y
-        """
+        #Dynamic Camera Based Position
+        self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
+
+class BaseProjectile(Sprite):
+    def __init__(self,game,x,y,vx,vy):
+        print("Firing")
+        self.groups = game.all_sprites,
+        Sprite.__init__(self,self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE/2, TILESIZE/2))
+        self.image.fill(WHITE)
+        self.rect = self.image.get_rect()
+        self.vel = vec(vx,vy)
+        self.pos = vec(x,y) * TILESIZE
+    def update(self):
+        #Projectile AI
+        self.pos.x += self.vel.x * self.game.dt
+        self.pos.y += self.vel.y * self.game.dt
         #Dynamic Camera Based Position
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
 
