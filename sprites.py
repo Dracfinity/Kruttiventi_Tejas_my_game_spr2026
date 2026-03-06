@@ -59,16 +59,12 @@ class Player(Sprite):
         #Immunity Frames for damage
         self.i_frames = Cooldown(500)
         self.i_frames.start()
-        #states, will be removed soon
-        self.jumping = False
-        self.walking = False
         #frames for animated updates
         self.last_update = 0
         self.current_frame = 0
         #different actions and states the player can be in
         self.state = {
-            "jumping":False,
-            "walking":False,
+            "moving":False,
             "idling":False
         }
         #FireRate
@@ -121,8 +117,17 @@ class Player(Sprite):
             self.pos.x += self.vel.x
             self.pos.y += self.vel.y
 
+    def state_handle(self):
+        #Handle States and move around different states
+        if self.vel != vec(0,0):
+            self.state['moving'] = False
+            self.state['idling'] = True
+        else:
+            self.state['moving'] = True
+            self.state['idling'] = False
 
     def update(self):
+        #Dynamic Camera System to allow to have the camera follow you
         Camera.x = self.pos.x
         Camera.y = self.pos.y
         self.hit_rect.centerx = self.rect.centerx
@@ -135,6 +140,7 @@ class Player(Sprite):
 
 
     def load_images(self):
+        #pull a TILESIZExTILESIZE square out of self.spritesheet
         self.standing_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE), 
                                 self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)]
         for frame in self.standing_frames:
@@ -145,7 +151,8 @@ class Player(Sprite):
 
     def animate(self):
         now = pg.time.get_ticks()
-        if not self.jumping and not self.walking:
+        #Animation of idling for now
+        if self.state['idling']:
             if now - self.last_update > 100:
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
@@ -153,6 +160,7 @@ class Player(Sprite):
 
 class Mob(Sprite):
     def __init__(self,game,x,y):
+        #Initialization of the Mob Class
         self.groups = game.all_sprites, game.all_mobs
         Sprite.__init__(self,self.groups)
         self.game = game
