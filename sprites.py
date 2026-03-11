@@ -3,7 +3,7 @@ from pygame.sprite import Sprite
 from settings import *
 from utils import *
 from os import path
-from math import acos
+from armory import *
 
 vec = pg.math.Vector2
 
@@ -28,8 +28,9 @@ def collide_with_wall(sprite,group,dir):
 
             sprite.vel.x *= 0.1
             sprite.hit_rect.centerx = sprite.rect.centerx
+            sprite.state['onground'] = True
     #Ycollide
-    if dir == 'y':
+    elif dir == 'y':
         hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
         if hits:
             #Top
@@ -40,6 +41,9 @@ def collide_with_wall(sprite,group,dir):
                 sprite.pos.y -= hits[0].rect.bottom - sprite.rect.centery - sprite.vel.y
             sprite.vel.y *= 0.1
             sprite.hit_rect.centery = sprite.rect.centery
+            sprite.state['onground'] = True
+    else:
+            sprite.state['onground'] = False
 
     
 
@@ -65,7 +69,8 @@ class Player(Sprite):
         #different actions and states the player can be in
         self.state = {
             "moving":False,
-            "idling":False
+            "idling":False,
+            "onground":False,
         }
         #FireRate
         self.firerate = Cooldown(500)
@@ -76,11 +81,6 @@ class Player(Sprite):
         keys = pg.key.get_pressed()
 
         wasdnum = 0
-        if keys[pg.K_f]:
-            if self.firerate.ready():
-                print("Fired")
-                p = BaseProjectile(self.game,self.pos.x,self.pos.y,1,0)
-                self.firerate.start()
         if keys[pg.K_w]:
             wasdnum +=1
         if keys[pg.K_a]:
@@ -179,7 +179,7 @@ class Mob(Sprite):
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
 
 class BaseProjectile(Sprite):
-    def __init__(self,game,x,y,vx,vy):
+    def __init__(self,game,x,y,vx,vy, lifetime):
         print("Firing")
         self.groups = game.all_sprites,
         Sprite.__init__(self,self.groups)
@@ -188,13 +188,18 @@ class BaseProjectile(Sprite):
         self.image.fill(WHITE)
         self.rect = self.image.get_rect()
         self.vel = vec(vx,vy)
-        self.pos = vec(x,y) * TILESIZE
+        self.pos = vec(x,y)
+        self.lived = 0;
+        self.lifetime = lifetime;
     def update(self):
         #Projectile AI
-        self.pos.x += self.vel.x * self.game.dt
-        self.pos.y += self.vel.y * self.game.dt
+        self.pos.x += self.vel.x
+        self.pos.y += self.vel.y
         #Dynamic Camera Based Position
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
+        self.lived+=1;
+        if self.lived > self.lifetime:
+            self.kill()
 
 class Wall(Sprite):
     def __init__(self, game, x, y):
@@ -209,5 +214,4 @@ class Wall(Sprite):
     def update(self):
         #Dynamic Camera Based Position
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
-
 
