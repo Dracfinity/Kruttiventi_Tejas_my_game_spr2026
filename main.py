@@ -28,6 +28,7 @@ from os import path
 from settings import *
 from sprites import *
 from utils import *
+from mob import *
 
 # import settings
 
@@ -50,24 +51,18 @@ class Game:
 
     def load_data(self):
         self.game_dir = path.dirname(__file__)
-        self.map = Map(path.join(self.game_dir, 'lv1.txt'))
         self.img_dir = path.join(self.game_dir, 'images')
         self.wall_img = pg.image.load(path.join(self.img_dir, 'Wall.png')).convert_alpha()
         print("data has loaded")
+
     
     #Each New Frame
     def new(self):
         self.all_sprites = pg.sprite.Group()
         self.all_mobs = pg.sprite.Group()
         self.all_walls = pg.sprite.Group()
-        for row, tiles in enumerate(self.map.data):
-            for col, tile in enumerate(tiles):
-                if tile == '9':
-                    Wall(self,col,row)
-                if tile == 'P':
-                    self.player = Player(self,col,row)
-                if tile == 'M':
-                    Mob(self,col,row)
+        self.player = Player(self, 0,0)
+        BaseMob(self,5,5)
         self.run()
 
     def run(self):
@@ -80,6 +75,7 @@ class Game:
             self.update()
             #Draw the new frame
             self.draw()
+            
 
     def events(self):
         for event in pg.event.get():
@@ -120,7 +116,6 @@ class Game:
     
     def draw(self):
         self.screen.fill((0,0,0))
-        pg.draw.rect(self.screen,(50,50,50),(0-Camera.x+(WIDTH)/2,0-Camera.y+(HEIGHT)/2,self.map.width,self.map.height))
         #self.draw_text(str(int(self.player.vel.x*1000)/1000)+","+str(int(self.player.vel.y*1000)/1000), 12, WHITE, WIDTH/5, HEIGHT/20)
         #self.draw_text(, 24, WHITE, WIDTH/2, 2*HEIGHT/4)
         self.all_sprites.draw(self.screen)

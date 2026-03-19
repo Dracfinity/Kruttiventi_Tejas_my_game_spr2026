@@ -13,38 +13,6 @@ def collide_hit_rect(one,two):
     #detect collisions
     return one.hit_rect.colliderect(two.rect)
 
-def collide_with_wall(sprite,group,dir):
-    #Collision by finding position and moving it backwards
-    #Xcollide
-    if dir == 'x':
-        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
-        if hits:
-            #Right
-            if hits[0].rect.centerx > sprite.hit_rect.centerx:
-                sprite.pos.x -= hits[0].rect.left - sprite.rect.centerx - sprite.vel.x #hits[0].rect.left - sprite.rect.right - sprite.vel.x
-            #Left
-            if hits[0].rect.centerx < sprite.hit_rect.centerx:
-                sprite.pos.x -= hits[0].rect.right - sprite.rect.centerx - sprite.vel.x #hits[0].rect.right - sprite.rect.left - sprite.vel.x
-
-            sprite.vel.x *= 0.1
-            sprite.hit_rect.centerx = sprite.rect.centerx
-            sprite.state['onground'] = True
-    #Ycollide
-    elif dir == 'y':
-        hits = pg.sprite.spritecollide(sprite, group, False, collide_hit_rect)
-        if hits:
-            #Top
-            if hits[0].rect.centery > sprite.hit_rect.centery:
-                sprite.pos.y -= hits[0].rect.top - sprite.rect.centery - sprite.vel.y
-            #Bottom
-            if hits[0].rect.centery < sprite.hit_rect.centery:
-                sprite.pos.y -= hits[0].rect.bottom - sprite.rect.centery - sprite.vel.y
-            sprite.vel.y *= 0.1
-            sprite.hit_rect.centery = sprite.rect.centery
-            sprite.state['onground'] = True
-    else:
-            sprite.state['onground'] = False
-
     
 
 
@@ -57,7 +25,7 @@ class Player(Sprite):
         self.load_images()
         self.image = self.standing_frames[0]
         self.rect = self.image.get_rect()
-        self.vel = vec(0,0)
+        self.vel = vec(1,0)
         self.pos = vec(x,y) * TILESIZE
         self.hit_rect = PLAYER_HIT_RECT
         #Immunity Frames for damage
@@ -72,6 +40,13 @@ class Player(Sprite):
             "idling":False,
             "onground":False,
         }
+        self.stats = {
+            "dmg": 1,
+            "firerate": 100,
+            "speed": 1,
+            "amount": 1,
+        }
+        self.ownedweapons = ["Basic","Boomerang","BurstFire","None","None","None"]
         #FireRate
         self.firerate = Cooldown(500)
         self.firerate.start()
@@ -131,12 +106,11 @@ class Player(Sprite):
         Camera.x = self.pos.x
         Camera.y = self.pos.y
         self.hit_rect.centerx = self.rect.centerx
-        collide_with_wall(self,self.game.all_walls,"x")
         self.hit_rect.centery = self.rect.centery
-        collide_with_wall(self,self.game.all_walls,"y")
         self.rect.x = WIDTH/2
         self.rect.y = HEIGHT/2
         self.animate()
+        self.ArmoryManagement()
 
 
     def load_images(self):
@@ -157,50 +131,34 @@ class Player(Sprite):
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
                 self.image = pg.transform.rotate(self.standing_frames[self.current_frame], self.vel.angle_to(vec(1,0)))
+    
+    def ArmoryManagement(self):
+        for i in self.ownedweapons:
+            if i == 'none':
+                continue;
+            elif i == "Boomerang":
+                if Boomerang.Cooldown.ready():
+                    for j in range(Boomerang.BaseStats['amount']+self.stats['amount']-1):
+                        Boomerang(self.game,self.pos.x+randint(-5*j,5*j),self.pos.y+randint(-5*j,5*j), self.vel.normalize()*self.stats['speed']*Boomerang.BaseStats['speed'],50)
+                    if Boomerang.Cooldown.time != Boomerang.BaseStats['firerate']*self.stats['firerate']:
+                        Boomerang.Cooldown.time = Boomerang.BaseStats['firerate']*self.stats['firerate']
+                    Boomerang.Cooldown.start()
+            elif i == "Basic":
+                if BaseProjectile.Cooldown.ready():
+                    for j in range(BaseProjectile.BaseStats['amount']+self.stats['amount']-1):
+                        BaseProjectile(self.game,self.pos.x+randint(-5*j,5*j),self.pos.y+randint(-5*j,5*j), self.vel.normalize()*self.stats['speed']*BaseProjectile.BaseStats['speed'])
+                    if BaseProjectile.Cooldown.time != 5*self.stats['firerate']:
+                        BaseProjectile.Cooldown.time = 5*self.stats['firerate']
+                    BaseProjectile.Cooldown.start()
+            elif i == "BurstFire":
+                if BurstFire.Cooldown.ready():
+                    BurstFire(self.game,self.pos.x,self.pos.y, self.vel.normalize()*self.stats['speed']*BurstFire.BaseStats['speed'],BurstFire.BaseStats['amount']+self.stats['amount'])
+                    if BurstFire.Cooldown.time != BurstFire.BaseStats['firerate']*self.stats['firerate']:
+                        BurstFire.Cooldown.time = BurstFire.BaseStats['firerate']*self.stats['firerate'];
+                    BurstFire.Cooldown.start()
 
-class Mob(Sprite):
-    def __init__(self,game,x,y):
-        #Initialization of the Mob Class
-        self.groups = game.all_sprites, game.all_mobs
-        Sprite.__init__(self,self.groups)
-        self.game = game
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(RED)
-        self.rect = self.image.get_rect()
-        self.vel = vec(0,0)
-        self.pos = vec(x,y) * TILESIZE
-    def update(self):
-        #Mob AI
-        self.vel.x = (self.vel.x +((self.game.player.pos.x-self.pos.x)/self.pos.magnitude())*MOBSPEED)*FRICTION
-        self.vel.y = (self.vel.y + ((self.game.player.pos.y-self.pos.y)/self.pos.magnitude())*MOBSPEED)*FRICTION
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
-        #Dynamic Camera Based Position
-        self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
 
-class BaseProjectile(Sprite):
-    def __init__(self,game,x,y,vx,vy, lifetime):
-        print("Firing")
-        self.groups = game.all_sprites,
-        Sprite.__init__(self,self.groups)
-        self.game = game
-        self.image = pg.Surface((TILESIZE/2, TILESIZE/2))
-        self.image.fill(WHITE)
-        self.rect = self.image.get_rect()
-        self.vel = vec(vx,vy)
-        self.pos = vec(x,y)
-        self.lived = 0;
-        self.lifetime = lifetime;
-    def update(self):
-        #Projectile AI
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
-        #Dynamic Camera Based Position
-        self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
-        self.lived+=1;
-        if self.lived > self.lifetime:
-            self.kill()
-
+'''
 class Wall(Sprite):
     def __init__(self, game, x, y):
         self.groups = game.all_sprites, game.all_walls
@@ -214,4 +172,4 @@ class Wall(Sprite):
     def update(self):
         #Dynamic Camera Based Position
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
-
+'''

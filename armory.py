@@ -2,15 +2,24 @@
 
 import pygame as pg
 from settings import *
-from utils import Camera
+from utils import Camera,Cooldown
 from random import randint
 
 Sprite = pg.sprite.Sprite
 vec = pg.math.Vector2
 
 class BaseProjectile(Sprite):
+    BaseStats = {
+        "firerate":20,
+        "dmg":3,
+        "pierce":2,
+        "amount":1,
+        "speed":15,
+    }
+    #Global Cooldown
+    Cooldown = Cooldown(500);
+    Cooldown.start();
     def __init__(self,game,x,y,vel):
-        print("Firing")
         self.groups = game.all_sprites,
         Sprite.__init__(self,self.groups)
         self.game = game
@@ -27,29 +36,57 @@ class BaseProjectile(Sprite):
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
         self.killcheck()
     def killcheck(self):
-        if (-1*WIDTH/2 > self.pos.x-self.game.player.pos.x or self.pos.x-self.game.player.pos.x > WIDTH/2) and (-1/2*HEIGHT > self.pos.y-self.game.player.pos.y or self.pos.y-self.game.player.pos.y > -1/2*HEIGHT):
+        dx = self.pos.x - self.game.player.pos.x
+        dy = self.pos.y - self.game.player.pos.y
+
+        if abs(dx) > WIDTH/2 or abs(dy) > HEIGHT/2:
             self.kill()
 
+
+
 class Boomerang(BaseProjectile):
+    BaseStats = {
+        "firerate":20,
+        "dmg":3,
+        "pierce":2,
+        "amount":1,
+        "speed":2,
+    }
+    #Global Cooldown
+    Cooldown = Cooldown(2000);
+    Cooldown.start();
+    #Initialization
     def __init__(self,game,x,y,vel, arclength):
         BaseProjectile.__init__(self,game,x,y,vel)
         self.image.fill(BLUE)
+        #The length of the boomerang curve
         self.arc = 0
         self.arclength = arclength
     def update(self):
         #Projectile AI
-        self.pos.x += self.vel.x * -1*(self.arc - self.arclength/2)
-        self.pos.y += self.vel.y * -1*(self.arc - self.arclength/2)
+        self.pos.x += self.vel.x * -0.5*(self.arc - self.arclength/2)
+        self.pos.y += self.vel.y * -0.5*(self.arc - self.arclength/2)
         self.arc+=1
         #Dynamic Camera Based Position
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
         super().killcheck()
 
-class Shotgun():
-    def __init__(self,game,x,y,vel):
+class BurstFire():
+    #Basic Stats to change for new stats
+    BaseStats = {
+        "firerate":50,
+        "dmg":3,
+        "pierce":2,
+        "amount":20,
+        "speed":2,
+    }
+    #Global Cooldown
+    Cooldown = Cooldown(2000);
+    Cooldown.start();
+    def __init__(self,game,x,y,vel,amount):
         self.projectiles = []
-        for i in range(10):
-            self.projectiles.append(BaseProjectile(game,x,y,vec(vel.x,vel.y+randint(-5,5)/5)))
+        for i in range(amount):
+            self.projectiles.append(BaseProjectile(game,x,y,vec(vel.x+randint(-amount,amount)/5,vel.y+randint(-amount,amount)/5)))
     def update(self):
         for i in range(len(self.projectiles)):
             self.projectiles[i].update()
