@@ -23,14 +23,13 @@ https://incompetech.com/music/royalty-free/
 '''
 
 import pygame as pg
-import sys
 from os import path
 from settings import *
 from sprites import *
 from utils import *
 from mob import *
 
-# import settings
+# import stuff
 
 #The Game
 class Game:
@@ -67,12 +66,13 @@ class Game:
 
     def run(self):
         while self.running:
+            if self.playing:
+                #Check for what has happened
+                self.events()
+                #Update Variable
+                self.update()
             #Delta Time is the change in time
             self.dt = self.clock.tick(FPS) / 1000
-            #Check for what has happened
-            self.events()
-            #Update Variable
-            self.update()
             #Draw the new frame
             self.draw()
             

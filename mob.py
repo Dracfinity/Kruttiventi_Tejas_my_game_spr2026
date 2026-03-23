@@ -4,6 +4,7 @@ from utils import *
 
 vec = pg.math.Vector2
 
+
 class BaseMob(Sprite):
     def __init__(self,game,x,y):
         #Initialization of the Mob Class
