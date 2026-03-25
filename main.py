@@ -28,6 +28,7 @@ from settings import *
 from sprites import *
 from utils import *
 from mob import *
+from modals import *
 
 # import stuff
 
@@ -93,6 +94,9 @@ class Game:
                 else:
                     print("not ready yet")
             """
+        justpressed = pg.key.get_just_pressed()
+        if justpressed[pg.K_p]:
+            PauseModal(self)
     
 
     def quit(self):
