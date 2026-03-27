@@ -15,7 +15,7 @@ def PauseModal(game):
         overlay = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
         
         pg.draw.rect(overlay,others[0][0],others[0][1])
-        game.screen.blit(others[1],(HEIGHT/2,WIDTH/2))
+        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
         game.screen.blit(overlay,(0,0))
         for i in buttons:
             i.check(mousepos,isdown[0])
@@ -25,6 +25,8 @@ def PauseModal(game):
             if event.type == pg.QUIT:
                 pg.quit()
     
+
+
 
 
 

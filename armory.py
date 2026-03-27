@@ -8,10 +8,12 @@ from random import randint
 Sprite = pg.sprite.Sprite
 vec = pg.math.Vector2
 
+
+
 class BaseProjectile(Sprite):
     BaseStats = {
         "firerate":20,
-        "dmg":3,
+        "dmg":15,
         "pierce":2,
         "amount":1,
         "speed":15,
@@ -20,7 +22,7 @@ class BaseProjectile(Sprite):
     Cooldown = Cooldown(500);
     Cooldown.start();
     def __init__(self,game,x,y,vel):
-        self.groups = game.all_sprites,
+        self.groups = game.all_sprites, game.all_projectiles
         Sprite.__init__(self,self.groups)
         self.game = game
         self.image = pg.Surface((TILESIZE/2, TILESIZE/2))
@@ -28,6 +30,8 @@ class BaseProjectile(Sprite):
         self.rect = self.image.get_rect()
         self.vel = vel
         self.pos = vec(x,y)
+        self.hits = []
+        self.piercing = self.BaseStats['pierce']
     def update(self):
         #Projectile AI
         self.pos.x += self.vel.x
@@ -47,7 +51,7 @@ class BaseProjectile(Sprite):
 class Boomerang(BaseProjectile):
     BaseStats = {
         "firerate":20,
-        "dmg":3,
+        "dmg":5,
         "pierce":2,
         "amount":1,
         "speed":2,
@@ -62,6 +66,7 @@ class Boomerang(BaseProjectile):
         #The length of the boomerang curve
         self.arc = 0
         self.arclength = arclength
+        self.piercing = self.BaseStats['pierce']
     def update(self):
         #Projectile AI
         self.pos.x += self.vel.x * -0.5*(self.arc - self.arclength/2)
@@ -76,7 +81,7 @@ class BurstFire():
     BaseStats = {
         "firerate":50,
         "dmg":3,
-        "pierce":2,
+        "pierce":1,
         "amount":20,
         "speed":2,
     }

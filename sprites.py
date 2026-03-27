@@ -156,6 +156,19 @@ class Player(Sprite):
                     if BurstFire.Cooldown.time != BurstFire.BaseStats['firerate']*self.stats['firerate']:
                         BurstFire.Cooldown.time = BurstFire.BaseStats['firerate']*self.stats['firerate'];
                     BurstFire.Cooldown.start()
+        for m in self.game.all_mobs:
+            hits = pg.sprite.spritecollide(m,self.game.all_projectiles,False)
+            for h in hits:
+                if m not in h.hits:
+                    m.health -= h.BaseStats["dmg"]
+                    h.hits.append(m)
+                    h.piercing -=1
+                    if h.piercing < 0:
+                        h.kill()
+                
+                
+
+
 
 
 '''

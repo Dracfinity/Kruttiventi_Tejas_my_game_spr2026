@@ -61,6 +61,7 @@ class Game:
         self.all_sprites = pg.sprite.Group()
         self.all_mobs = pg.sprite.Group()
         self.all_walls = pg.sprite.Group()
+        self.all_projectiles = pg.sprite.Group()
         self.player = Player(self, 0,0)
         BaseMob(self,5,5)
         self.run()
@@ -119,8 +120,8 @@ class Game:
 
     
     def draw(self):
-        self.screen.fill((0,0,0))
-        #self.draw_text(str(int(self.player.vel.x*1000)/1000)+","+str(int(self.player.vel.y*1000)/1000), 12, WHITE, WIDTH/5, HEIGHT/20)
+        self.screen.fill((0,0,100))
+        self.draw_text(str(pg.time.get_ticks()/1000), 12, WHITE, WIDTH/5, HEIGHT/20)
         #self.draw_text(, 24, WHITE, WIDTH/2, 2*HEIGHT/4)
         self.all_sprites.draw(self.screen)
         #pg.draw.rect(self.screen,BLUE,self.player.hit_rect)

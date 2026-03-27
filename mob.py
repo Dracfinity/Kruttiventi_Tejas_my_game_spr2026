@@ -16,6 +16,7 @@ class BaseMob(Sprite):
         self.rect = self.image.get_rect()
         self.vel = vec(0,0)
         self.pos = vec(x,y) * TILESIZE
+        self.health = 100
     def update(self):
         #Mob AI
         self.vel.x = (self.vel.x +((self.game.player.pos.x-self.pos.x)/self.pos.magnitude())*MOBSPEED)*FRICTION
@@ -24,3 +25,7 @@ class BaseMob(Sprite):
         self.pos.y += self.vel.y
         #Dynamic Camera Based Position
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
+        if self.health < 0:
+            self.kill()
+        else:
+            self.image.fill((int((self.health*255)/100),0,0))
