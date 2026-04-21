@@ -1,5 +1,3 @@
-#CREATE WEAPONS HERE TO FIRE
-
 import pygame as pg
 from settings import *
 from utils import Camera,Cooldown
@@ -8,91 +6,104 @@ from random import randint
 Sprite = pg.sprite.Sprite
 vec = pg.math.Vector2
 
-
-
 class BaseProjectile(Sprite):
-    BaseStats = {
-        "firerate":20,
-        "dmg":15,
-        "pierce":2,
-        "amount":1,
-        "speed":15,
-    }
-    #Global Cooldown
-    Cooldown = Cooldown(500);
-    Cooldown.start();
-    def __init__(self,game,x,y,vel):
+    def __init__(self,game,x,y,w,h):
         self.groups = game.all_sprites, game.all_projectiles
         Sprite.__init__(self,self.groups)
         self.game = game
-        self.image = pg.Surface((TILESIZE/2, TILESIZE/2))
-        self.image.fill(WHITE)
+        self.image = pg.Surface((w, h),pg.SRCALPHA)
+        self.image.fill(BLACK)
         self.rect = self.image.get_rect()
-        self.vel = vel
         self.pos = vec(x,y)
         self.hits = []
-        self.piercing = self.BaseStats['pierce']
-    def update(self):
-        #Projectile AI
-        self.pos.x += self.vel.x
-        self.pos.y += self.vel.y
-        #Dynamic Camera Based Position
+    def clear(self):
+        self.image.fill(BLACK)
+        self.image.set_colorkey(BLACK)
+    def draw(self):
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
-        self.killcheck()
+        self.game.screen.blit(self.image)
+
+class DurationProjectile(BaseProjectile):
+    #Stats Needed
+    #BaseStats = {
+    #    "dmg":,
+    #    "cooldown":,
+    #    "duration":,
+    #    "dmgtick":,
+    #}
+    #
+    def __init__(self,game,x,y,w,h,duration):
+        BaseProjectile.__init__(self,game,x,y,w,h)
+        self.duration = duration
+        self.begintime = pg.time.get_ticks()
+        
     def killcheck(self):
-        dx = self.pos.x - self.game.player.pos.x
-        dy = self.pos.y - self.game.player.pos.y
-
-        if abs(dx) > WIDTH/2 or abs(dy) > HEIGHT/2:
+        if self.duration < pg.time.get_ticks()-self.begintime:
             self.kill()
-
-
-
-class Boomerang(BaseProjectile):
+    
+class Earthquake(DurationProjectile):
     BaseStats = {
-        "firerate":20,
-        "dmg":5,
-        "pierce":2,
-        "amount":1,
-        "speed":2,
+        "dmg": 100,
+        "cooldown": Cooldown(2000),
+        "duration": 200,
+        "dmgtick": 100,
     }
-    #Global Cooldown
-    Cooldown = Cooldown(2000);
-    Cooldown.start();
-    #Initialization
-    def __init__(self,game,x,y,vel, arclength):
-        BaseProjectile.__init__(self,game,x,y,vel)
-        self.image.fill(BLUE)
-        #The length of the boomerang curve
-        self.arc = 0
-        self.arclength = arclength
-        self.piercing = self.BaseStats['pierce']
+    BaseStats["cooldown"].start()
+    def __init__(self,game,x,y):
+        self.dmg = Earthquake.BaseStats["dmg"]
+        self.dmgtick = Cooldown(float(Earthquake.BaseStats["dmgtick"]))
+        self.size = TILESIZE*5
+        super().__init__(game,x,y,self.size,self.size,Earthquake.BaseStats["duration"])
+        self.lines = []
+        for i in range(25):
+            self.lines.append([vec(randint(int(0.1*self.size),int(self.size*0.9)),randint(int(0.1*self.size),int(self.size*0.9))),vec(randint(int(-0.1*self.size),int(self.size*0.1)),randint(int(-0.1*self.size),int(self.size*0.1)))])
+    
     def update(self):
-        #Projectile AI
-        self.pos.x += self.vel.x * -0.5*(self.arc - self.arclength/2)
-        self.pos.y += self.vel.y * -0.5*(self.arc - self.arclength/2)
-        self.arc+=1
-        #Dynamic Camera Based Position
-        self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
-        super().killcheck()
+        self.killcheck()
+        self.clear()
+        for i in self.lines:
+            pg.draw.lines(self.image,(150,50,0),False,((self.size/2,self.size/2),(i[0].x,i[0].y),(i[1].x+i[0].x,i[1].y+i[0].y)),5)
+        pg.draw.circle(self.image,(100,20,0),(self.size/2,self.size/2),self.size*0.1,0)
+        self.draw()
+        self.collide()
+    
+    def collide(self):
+        hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
+        for i in hits:
+            if self.dmgtick.ready():
+                i.health -= self.dmg
+                self.dmgtick.start()
 
-class BurstFire():
-    #Basic Stats to change for new stats
+class RelativeDuration(DurationProjectile):
+    def __init__(self,game,w,h,duration):
+        DurationProjectile.__init__(self,game,game.player.pos.x,game.player.pos.x,w,h,duration)
+    def update(self):
+        self.pos = self.game.player.pos
+
+class Tornado(RelativeDuration):
     BaseStats = {
-        "firerate":50,
-        "dmg":3,
-        "pierce":1,
-        "amount":20,
-        "speed":2,
+        "dmg": 5,
+        "cooldown": Cooldown(1000),
+        "duration": 1000,
+        "dmgtick": 20,
     }
-    #Global Cooldown
-    Cooldown = Cooldown(2000);
-    Cooldown.start();
-    def __init__(self,game,x,y,vel,amount):
-        self.projectiles = []
-        for i in range(amount):
-            self.projectiles.append(BaseProjectile(game,x,y,vec(vel.x+randint(-amount,amount)/5,vel.y+randint(-amount,amount)/5)))
+    def __init__(self,game):
+        self.dmg = Tornado.BaseStats["dmg"]
+        self.size = TILESIZE*4
+        self.dmgtick = Cooldown(float(Tornado.BaseStats["dmgtick"]))
+        RelativeDuration.__init__(self,game,self.size,self.size,Tornado.BaseStats['duration'])
+        self.lines = 10
     def update(self):
-        for i in range(len(self.projectiles)):
-            self.projectiles[i].update()
-
+        self.killcheck()
+        super().update()
+        self.clear()
+        for i in range(self.lines):
+            pg.draw.circle(self.image,(255,255,255,150),(self.size/2+randint(-2,2),self.size/2+randint(-2,2)),(self.size*i)/(self.lines*2)-2,1);
+        self.draw()
+        self.collide()
+    def collide(self):
+        if self.dmgtick.ready():
+            hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
+            for i in hits:
+                i.health -= self.dmg
+                self.dmgtick.start()

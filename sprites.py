@@ -46,7 +46,7 @@ class Player(Sprite):
             "speed": 1,
             "amount": 1,
         }
-        self.ownedweapons = ["Basic","Boomerang","BurstFire","None","None","None"]
+        self.ownedweapons = ["Earthquake","Tornado","BurstFire","None","None","None"]
         #FireRate
         self.firerate = Cooldown(500)
         self.firerate.start()
@@ -137,34 +137,17 @@ class Player(Sprite):
             if i == 'none':
                 continue;
             elif i == "Boomerang":
-                if Boomerang.Cooldown.ready():
-                    for j in range(Boomerang.BaseStats['amount']+self.stats['amount']-1):
-                        Boomerang(self.game,self.pos.x+randint(-5*j,5*j),self.pos.y+randint(-5*j,5*j), self.vel.normalize()*self.stats['speed']*Boomerang.BaseStats['speed'],50)
-                    if Boomerang.Cooldown.time != Boomerang.BaseStats['firerate']*self.stats['firerate']:
-                        Boomerang.Cooldown.time = Boomerang.BaseStats['firerate']*self.stats['firerate']
-                    Boomerang.Cooldown.start()
-            elif i == "Basic":
-                if BaseProjectile.Cooldown.ready():
-                    for j in range(BaseProjectile.BaseStats['amount']+self.stats['amount']-1):
-                        BaseProjectile(self.game,self.pos.x+randint(-5*j,5*j),self.pos.y+randint(-5*j,5*j), self.vel.normalize()*self.stats['speed']*BaseProjectile.BaseStats['speed'])
-                    if BaseProjectile.Cooldown.time != 5*self.stats['firerate']:
-                        BaseProjectile.Cooldown.time = 5*self.stats['firerate']
-                    BaseProjectile.Cooldown.start()
+                pass;
+            elif i == "Earthquake":
+                if Earthquake.BaseStats["cooldown"].ready():
+                    Earthquake.BaseStats["cooldown"].start()
+                    Earthquake(self.game,self.pos.x+randint(int(-WIDTH/2),int(WIDTH/2)),self.pos.y+randint(int(-WIDTH/2),int(WIDTH/2)))
+            elif i == "Tornado":
+                if Tornado.BaseStats["cooldown"].ready():
+                    Tornado.BaseStats["cooldown"].start()
+                    Tornado(self.game)
             elif i == "BurstFire":
-                if BurstFire.Cooldown.ready():
-                    BurstFire(self.game,self.pos.x,self.pos.y, self.vel.normalize()*self.stats['speed']*BurstFire.BaseStats['speed'],BurstFire.BaseStats['amount']+self.stats['amount'])
-                    if BurstFire.Cooldown.time != BurstFire.BaseStats['firerate']*self.stats['firerate']:
-                        BurstFire.Cooldown.time = BurstFire.BaseStats['firerate']*self.stats['firerate'];
-                    BurstFire.Cooldown.start()
-        for m in self.game.all_mobs:
-            hits = pg.sprite.spritecollide(m,self.game.all_projectiles,False)
-            for h in hits:
-                if m not in h.hits:
-                    m.health -= h.BaseStats["dmg"]
-                    h.hits.append(m)
-                    h.piercing -=1
-                    if h.piercing < 0:
-                        h.kill()
+                pass;
                 
                 
 

@@ -63,7 +63,7 @@ class Game:
         self.all_walls = pg.sprite.Group()
         self.all_projectiles = pg.sprite.Group()
         self.player = Player(self, 0,0)
-        BaseMob(self,5,5)
+        self.spawner = Spawner(self)
         self.run()
 
     def run(self):
@@ -110,11 +110,8 @@ class Game:
                 print("collision")
                 self.player.i_frames.start()
 
-        #update monsters game awareness to allow for monster pathfinding(extremely basic) 
-        for i in self.all_mobs:
-            i.game = self
-
         #update all
+        self.spawner.update()
         self.player.get_keys()
         self.all_sprites.update()
 
