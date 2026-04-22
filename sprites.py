@@ -46,7 +46,7 @@ class Player(Sprite):
             "speed": 1,
             "amount": 1,
         }
-        self.ownedweapons = ["Earthquake","Tornado","BurstFire","None","None","None"]
+        self.ownedweapons = ["Earthquake","Tornado","Tsunami","None","None","None"]
         #FireRate
         self.firerate = Cooldown(500)
         self.firerate.start()
@@ -146,8 +146,10 @@ class Player(Sprite):
                 if Tornado.BaseStats["cooldown"].ready():
                     Tornado.BaseStats["cooldown"].start()
                     Tornado(self.game)
-            elif i == "BurstFire":
-                pass;
+            elif i == "Tsunami":
+                if Tsunami.BaseStats["cooldown"].ready():
+                    Tsunami.BaseStats["cooldown"].start()
+                    Tsunami(self.game)
                 
                 
 

@@ -16,7 +16,7 @@ class Spawner():
         #print(self.handledmobs)
         #BaseMob
         if self.BaseMobCooldown.ready():
-            for i in range(min(int(self.time/10000),20)):
+            for i in range(min(int(self.time/1000),20)):
                 match(randint(0,3)):
                     case 0:
                         BaseMob(self.game,0,randint(0,HEIGHT))
@@ -28,7 +28,7 @@ class Spawner():
                         BaseMob(self.game,randint(0,WIDTH),HEIGHT)
             self.BaseMobCooldown.start();
         if self.TankMobCooldown.ready():
-            for i in range(max(0,min(int(self.time/10000)-20,20))):
+            for i in range(max(0,min(int(self.time/10000)-2,20))):
                 match(randint(0,3)):
                     case 0:
                         TankMob(self.game,0,randint(0,HEIGHT))
@@ -52,17 +52,18 @@ class BaseMob(Sprite):
         self.image.fill(RED)
         self.rect = self.image.get_rect()
         self.pos = vec(self.game.player.pos.x-WIDTH/2+x,self.game.player.pos.y-HEIGHT/2+y)
-        self.health = 100
+        self.maxhealth = 50
+        self.health = self.maxhealth
     def update(self):
         #Mob AI
         self.pos.x += ((self.game.player.pos.x-self.pos.x)/vec(self.game.player.pos.x-self.pos.x,self.game.player.pos.y-self.pos.y).magnitude())*MOBSPEED
         self.pos.y += ((self.game.player.pos.y-self.pos.y)/vec(self.game.player.pos.x-self.pos.x,self.game.player.pos.y-self.pos.y).magnitude())*MOBSPEED
         #Dynamic Camera Based Position
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
-        if self.health < 0:
+        if self.health <= 0:
             self.kill()
         else:
-            self.image.fill((int((self.health*255)/100),0,0))
+            self.image.fill((int((self.health*255)/self.maxhealth),0,0))
 
 class TankMob(Sprite):
     def __init__(self,game,x,y):
@@ -74,14 +75,16 @@ class TankMob(Sprite):
         self.image.fill(RED)
         self.rect = self.image.get_rect()
         self.pos = vec(self.game.player.pos.x-WIDTH/2+x,self.game.player.pos.y-HEIGHT/2+y)
-        self.health = 1000
+        self.maxhealth = 1000
+        self.health = self.maxhealth
     def update(self):
         #Mob AI
         self.pos.x += ((self.game.player.pos.x-self.pos.x)/vec(self.game.player.pos.x-self.pos.x,self.game.player.pos.y-self.pos.y).magnitude())*MOBSPEED/3
         self.pos.y += ((self.game.player.pos.y-self.pos.y)/vec(self.game.player.pos.x-self.pos.x,self.game.player.pos.y-self.pos.y).magnitude())*MOBSPEED/3
         #Dynamic Camera Based Position
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
-        if self.health < 0:
+        if self.health <= 0:
             self.kill()
+            
         else:
-            self.image.fill((int((self.health*200)/1000),int((self.health*200)/1000),int((self.health*200)/1000)))
+            self.image.fill((int((self.health*200)/self.maxhealth),int((self.health*200)/self.maxhealth),int((self.health*200)/self.maxhealth)))

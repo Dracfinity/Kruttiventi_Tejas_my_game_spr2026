@@ -46,7 +46,7 @@ class Earthquake(DurationProjectile):
         "dmg": 100,
         "cooldown": Cooldown(2000),
         "duration": 200,
-        "dmgtick": 100,
+        "dmgtick": 10,
     }
     BaseStats["cooldown"].start()
     def __init__(self,game,x,y):
@@ -66,7 +66,6 @@ class Earthquake(DurationProjectile):
         pg.draw.circle(self.image,(100,20,0),(self.size/2,self.size/2),self.size*0.1,0)
         self.draw()
         self.collide()
-    
     def collide(self):
         hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
         for i in hits:
@@ -107,3 +106,48 @@ class Tornado(RelativeDuration):
             for i in hits:
                 i.health -= self.dmg
                 self.dmgtick.start()
+
+class RelativeDirectionDuration(RelativeDuration):
+    def __init__(self,game,w,h,duration):
+        DurationProjectile.__init__(self,game,game.player.pos.x,game.player.pos.x,w,h,duration)
+        try:
+            self.dir = self.game.player.vel.normalize()
+        except:
+            self.dir = vec(1,0)
+    def update(self):
+        super().update()
+        try:
+            self.dir = self.game.player.vel.normalize()
+        except:
+            self.dir = vec(1,0)
+
+class Tsunami(RelativeDirectionDuration):
+    #BaseStats
+    BaseStats = {
+        "dmg": 100,
+        "cooldown": Cooldown(3000),
+        "duration": 500,
+        "dmgtick": 20,
+    }
+    def __init__(self,game):
+        self.dmg = Tsunami.BaseStats["dmg"]
+        self.size = TILESIZE*25
+        self.dmgtick = Cooldown(float(Tsunami.BaseStats["dmgtick"]))
+        RelativeDuration.__init__(self,game,self.size,self.size,Tsunami.BaseStats['duration'])
+        self.width = 0.05
+    def update(self):
+        self.killcheck()
+        super().update()
+        self.clear()
+        pg.draw.polygon(self.image,(100,100,255),[(self.size/2,self.size/2),(self.size/2+(self.dir.x*self.size/2)-(self.dir.y/self.width),self.size/2+(self.dir.y*self.size/2)+(self.dir.x/self.width)),(self.size/2+(self.dir.x*self.size/2)+(self.dir.y/self.width),self.size/2+(self.dir.y*self.size/2)-(self.dir.x/self.width))])
+        self.draw()
+        self.collide()
+    #Collide, Rect then Mask
+    def collide(self):
+        if self.dmgtick.ready():
+            hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
+            self.mask = pg.mask.from_surface(self.image)
+            for i in hits:
+                if pg.sprite.collide_mask(self,i) != None:
+                    i.health -= self.dmg
+                    self.dmgtick.start()
