@@ -25,21 +25,31 @@ def PauseModal(game):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
-    
+Options = {
+    "Tornado":[
+            ["A low damage tornado that spins around the character","game.player.armory.upgrade('Tornado');"],
+            ["Increase Tornado Damage by 3 per hit","game.player.armory.upgrade('Tornado');Tornado.BaseStats['dmg']+=3"],
+            ["Increase Tornado Size by 50%","game.player.armory.upgrade('Tornado');Tornado.BaseStats['size']*=1.5"],
+            ["Make Tornado Attack 25% more","game.player.armory.upgrade('Tornado');Tornado.BaseStats['dmgtick']*=0.75"],
+            ["Increase Tornado Damage by 5 per hit","game.player.armory.upgrade('Tornado');Tornado.BaseStats['dmg']+=5"],
+            ["Increase Tornado Size by 50%","game.player.armory.upgrade('Tornado');Tornado.BaseStats['size']*=1.5"],
+            ["Slow all enemies in the range of the Tornado","game.player.armory.upgrade('Tornado');Tornado.BaseStats['ultimate']=True"],
+            ]
+}      
+
+
 def LevelUp(game):
     game.playing = False;
-    others = [["#444444aa",pg.Rect(0,0,WIDTH,HEIGHT)],
-              pg.font.SysFont("arial",50).render("Pause",True,"#ffffffff"),
-            ]
+    
+    #Get Possible Weapons to upgrade
+    
     buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Continue",WIDTH/20,"self.game.playing = True",game),
-               Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit",WIDTH/20,"pg.quit()",game),]
+               Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit",WIDTH/20,"game.player",game),]
     while game.playing == False:
         mousepos = pg.mouse.get_pos()
         isdown = pg.mouse.get_pressed()
         overlay = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
         
-        pg.draw.rect(overlay,others[0][0],others[0][1])
-        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
         game.screen.blit(overlay,(0,0))
         for i in buttons:
             i.check(mousepos,isdown[0])
@@ -48,6 +58,7 @@ def LevelUp(game):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
+
 
 
 

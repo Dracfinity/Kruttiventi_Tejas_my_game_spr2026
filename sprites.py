@@ -46,7 +46,8 @@ class Player(Sprite):
             "speed": 1,
             "amount": 1,
         }
-        self.ownedweapons = ["Earthquake","Tornado","Tsunami","None","None","None"]
+        self.armory = Armory(self.game)
+        self.armory.upgrade("Landslide")
         #FireRate
         self.firerate = Cooldown(500)
         self.firerate.start()
@@ -110,8 +111,7 @@ class Player(Sprite):
         self.rect.x = WIDTH/2
         self.rect.y = HEIGHT/2
         self.animate()
-        self.ArmoryManagement()
-
+        self.armory.handle()
 
     def load_images(self):
         #pull a TILESIZExTILESIZE square out of self.spritesheet
@@ -131,25 +131,7 @@ class Player(Sprite):
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
                 self.image = pg.transform.rotate(self.standing_frames[self.current_frame], self.vel.angle_to(vec(1,0)))
-    
-    def ArmoryManagement(self):
-        for i in self.ownedweapons:
-            if i == 'none':
-                continue;
-            elif i == "Boomerang":
-                pass;
-            elif i == "Earthquake":
-                if Earthquake.BaseStats["cooldown"].ready():
-                    Earthquake.BaseStats["cooldown"].start()
-                    Earthquake(self.game,self.pos.x+randint(int(-WIDTH/2),int(WIDTH/2)),self.pos.y+randint(int(-WIDTH/2),int(WIDTH/2)))
-            elif i == "Tornado":
-                if Tornado.BaseStats["cooldown"].ready():
-                    Tornado.BaseStats["cooldown"].start()
-                    Tornado(self.game)
-            elif i == "Tsunami":
-                if Tsunami.BaseStats["cooldown"].ready():
-                    Tsunami.BaseStats["cooldown"].start()
-                    Tsunami(self.game)
+        
                 
                 
 
