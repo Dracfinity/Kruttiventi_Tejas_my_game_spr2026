@@ -4,6 +4,8 @@ from settings import *
 from utils import *
 from os import path
 from armory import *
+from math import sqrt
+from modals import *
 
 vec = pg.math.Vector2
 
@@ -48,6 +50,9 @@ class Player(Sprite):
         }
         self.armory = Armory(self.game)
         self.armory.upgrade("Landslide")
+        #Experience and Levels
+        self.level = 0;
+        self.exp = 0;
         #FireRate
         self.firerate = Cooldown(500)
         self.firerate.start()
@@ -110,6 +115,7 @@ class Player(Sprite):
         self.hit_rect.centery = self.rect.centery
         self.rect.x = WIDTH/2
         self.rect.y = HEIGHT/2
+        self.levelhandle()
         self.animate()
         self.armory.handle()
 
@@ -131,25 +137,15 @@ class Player(Sprite):
                 self.last_update = now
                 self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
                 self.image = pg.transform.rotate(self.standing_frames[self.current_frame], self.vel.angle_to(vec(1,0)))
+    
+    def levelhandle(self):
+        if(self.exp > self.level*sqrt(self.level)):
+            self.exp = 0;
+            LevelUp(self.game)
+            self.level += 1;
+
         
                 
                 
 
 
-
-
-'''
-class Wall(Sprite):
-    def __init__(self, game, x, y):
-        self.groups = game.all_sprites, game.all_walls
-        Sprite.__init__(self,self.groups)
-        self.game = game
-        self.image = game.wall_img
-        self.rect = self.image.get_rect()
-        self.vel = vec(0,0)
-        self.pos = vec(x,y) * TILESIZE
-        self.rect.center = self.pos
-    def update(self):
-        #Dynamic Camera Based Position
-        self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
-'''

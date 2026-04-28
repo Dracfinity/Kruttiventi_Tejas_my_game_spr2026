@@ -40,53 +40,6 @@ class Spawner():
                         TankMob(self.game,randint(0,WIDTH),HEIGHT)
             self.TankMobCooldown.start();
                 
-        
-
-class BaseMob(Sprite):
-    def __init__(self,game,x,y):
-        #Initialization of the Mob Class
-        self.groups = game.all_sprites, game.all_mobs
-        Sprite.__init__(self,self.groups)
-        self.game = game
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(RED)
-        self.rect = self.image.get_rect()
-        self.pos = vec(self.game.player.pos.x-WIDTH/2+x,self.game.player.pos.y-HEIGHT/2+y)
-        self.maxhealth = 50
-        self.health = self.maxhealth
-    def update(self):
-        #Mob AI
-        self.pos.x += ((self.game.player.pos.x-self.pos.x)/vec(self.game.player.pos.x-self.pos.x,self.game.player.pos.y-self.pos.y).magnitude())*MOBSPEED
-        self.pos.y += ((self.game.player.pos.y-self.pos.y)/vec(self.game.player.pos.x-self.pos.x,self.game.player.pos.y-self.pos.y).magnitude())*MOBSPEED
-        #Dynamic Camera Based Position
-        self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
-        if self.health <= 0:
-            self.kill()
-        else:
-            self.image.fill((int((self.health*255)/self.maxhealth),0,0))
-
-class TankMob(Sprite):
-    def __init__(self,game,x,y):
-        #Initialization of the Mob Class
-        self.groups = game.all_sprites, game.all_mobs
-        Sprite.__init__(self,self.groups)
-        self.game = game
-        self.image = pg.Surface((TILESIZE*2, TILESIZE*2))
-        self.image.fill(RED)
-        self.rect = self.image.get_rect()
-        self.pos = vec(self.game.player.pos.x-WIDTH/2+x,self.game.player.pos.y-HEIGHT/2+y)
-        self.maxhealth = 1000
-        self.health = self.maxhealth
-    def update(self):
-        #Mob AI
-        self.pos.x += ((self.game.player.pos.x-self.pos.x)/vec(self.game.player.pos.x-self.pos.x,self.game.player.pos.y-self.pos.y).magnitude())*MOBSPEED/3
-        self.pos.y += ((self.game.player.pos.y-self.pos.y)/vec(self.game.player.pos.x-self.pos.x,self.game.player.pos.y-self.pos.y).magnitude())*MOBSPEED/3
-        #Dynamic Camera Based Position
-        self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
-        if self.health <= 0:
-            self.kill()  
-        else:
-            self.image.fill((int((self.health*200)/self.maxhealth),int((self.health*200)/self.maxhealth),int((self.health*200)/self.maxhealth)))
 
 
 class Mob(Sprite):
@@ -122,7 +75,7 @@ class Mob(Sprite):
             match(self.effects[i][0]):
                 case "Slow":
                     self.speed = self.basespeed * self.effects[i][1]
-                case "Burning":
+                case "Poison":
                     self.health -= self.effects[i][1]
                 case "Frozen":
                     if self.effects[i][1] >= 0:
@@ -131,3 +84,15 @@ class Mob(Sprite):
                     else:
                         self.speed = self.basespeed
                         self.effects.pop(i)
+
+class BaseMob(Mob):
+    def __init__(self, game, x, y):
+        super().__init__(game, x, y, 100, TILESIZE, pg.Color(255,0,0), 1)
+    def update(self):
+        super().update()
+
+class TankMob(Mob):
+    def __init__(self, game, x, y):
+        super().__init__(game, x, y, 100, TILESIZE, pg.Color(150,150,150), 0.3)
+    def update(self):
+        super().update()

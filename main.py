@@ -109,7 +109,8 @@ class Game:
             if(bool(len(pg.sprite.spritecollide(self.player,self.all_mobs,False)))):
                 print("collision")
                 self.player.i_frames.start()
-
+        #Temporary Autolevel
+        self.player.exp += 0.1
         #update all
         self.spawner.update()
         self.player.get_keys()
@@ -119,9 +120,10 @@ class Game:
     def draw(self):
         self.screen.fill((0,0,100))
         self.draw_text(str(pg.time.get_ticks()/1000), 12, WHITE, WIDTH/5, HEIGHT/20)
-        #self.draw_text(, 24, WHITE, WIDTH/2, 2*HEIGHT/4)
-        self.all_sprites.draw(self.screen)
-        #pg.draw.rect(self.screen,BLUE,self.player.hit_rect)
+        
+        #Level Screen
+        pg.draw.rect(self.screen,(100,100,100),(0,0,WIDTH,TILESIZE))
+        pg.draw.rect(self.screen,(100,100,255),(0,0,(self.player.exp/self.player.level*sqrt(self.player.level))*WIDTH,TILESIZE))
         pg.display.flip()
 
     def draw_text(self, text, size, color, x, y):
