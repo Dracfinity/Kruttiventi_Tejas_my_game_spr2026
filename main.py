@@ -64,6 +64,7 @@ class Game:
         self.all_projectiles = pg.sprite.Group()
         self.player = Player(self, 0,0)
         self.spawner = Spawner(self)
+        LevelUp(self)
         self.run()
 
     def run(self):
@@ -74,7 +75,7 @@ class Game:
                 #Update Variable
                 self.update()
             #Delta Time is the change in time
-            self.dt = self.clock.tick(FPS) / 1000
+            self.dt = self.clock.tick() / 1000
             #Draw the new frame
             self.draw()
             
@@ -107,23 +108,22 @@ class Game:
         #immunity frames
         if(self.player.i_frames.ready()):
             if(bool(len(pg.sprite.spritecollide(self.player,self.all_mobs,False)))):
-                print("collision")
+                
                 self.player.i_frames.start()
-        #Temporary Autolevel
-        self.player.exp += 0.1
         #update all
         self.spawner.update()
         self.player.get_keys()
         self.all_sprites.update()
+        self.clock.tick(FPS)
 
     
     def draw(self):
         self.screen.fill((0,0,100))
         self.draw_text(str(pg.time.get_ticks()/1000), 12, WHITE, WIDTH/5, HEIGHT/20)
-        
         #Level Screen
+        self.all_sprites.draw(self.screen)
         pg.draw.rect(self.screen,(100,100,100),(0,0,WIDTH,TILESIZE))
-        pg.draw.rect(self.screen,(100,100,255),(0,0,(self.player.exp/self.player.level*sqrt(self.player.level))*WIDTH,TILESIZE))
+        pg.draw.rect(self.screen,(100,100,255),(0,0,(self.player.exp/(self.player.level**2))*WIDTH,TILESIZE))
         pg.display.flip()
 
     def draw_text(self, text, size, color, x, y):

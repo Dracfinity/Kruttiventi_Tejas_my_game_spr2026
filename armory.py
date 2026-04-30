@@ -16,27 +16,33 @@ class Armory():
         self.allWeapons = ["Earthquake","Tsunami","Tornado","Landslide","Plague"]
     def upgrade(self,weapon):
         for i in range(len(self.owned)):
-            if self.owned[i][0] == None or self.owned[i][0] == weapon:
+            if self.owned[i][0] == weapon:
+                self.owned[i][1] += 1
+                return 0;
+        for i in range(len(self.owned)):
+            if self.owned[i][0] == None:
                 self.owned[i][0] = weapon
                 self.owned[i][1] += 1
+                return 0;
     def getOptions(self):
-        full = True
+        full = True;
         for i in self.owned:
             if i[0] == None:
                 full = False;
+        
         if full == False:
             self.possible = ["Earthquake","Tsunami","Tornado","Landslide","Plague"]
             for i in self.owned:
-                if i[1] == 6:
+                if i[1] == 7 and i[0] in self.possible:
                     self.possible.remove(i[0])
             return sample(self.possible,k=3)
         else:
-            self.possible = [i for i[0] in self.owned if i[1] < 6]
-            if len(self.possible) >= 3:
-                return sample(self.possible,k=3)
+            self.possible = [x[0] for x in self.owned if x[1] < 7]
+            if len(self.possible) > 3:
+                    return sample(self.possible,k=3)
             else:
-                while len(self.possible) < 3:
-                    self.possible.append([None,0])
+                while len(self.possible) <= 3:
+                    self.possible.append("Full")
                 return self.possible
     def getLevel(self,weapon):
         for i in self.owned:
@@ -54,7 +60,7 @@ class Armory():
                 case "Earthquake":
                     if Earthquake.BaseStats["cooldown"].ready():
                         Earthquake.BaseStats["cooldown"].start()
-                        Earthquake(self.game,self.pos.x+randint(int(-WIDTH/2),int(WIDTH/2)),self.pos.y+randint(int(-WIDTH/2),int(WIDTH/2)))
+                        Earthquake(self.game,self.game.player.pos.x+randint(int(-WIDTH/2),int(WIDTH/2)),self.game.player.pos.y+randint(int(-WIDTH/2),int(WIDTH/2)))
                 case "Tornado":
                     if Tornado.BaseStats["cooldown"].ready():
                         Tornado.BaseStats["cooldown"].start()
@@ -111,18 +117,15 @@ class MassDuration(DurationProjectile):
             i[0].x += i[2].x
             i[0].y += i[2].y
         
-
-
-
 class RelativeDuration(DurationProjectile):
     def __init__(self,game,w,h,duration):
-        DurationProjectile.__init__(self,game,game.player.pos.x,game.player.pos.x,w,h,duration)
+        DurationProjectile.__init__(self,game,game.player.pos.x,game.player.pos.y,w,h,duration)
     def update(self):
         self.pos = self.game.player.pos
         
 class RelativeDirectionDuration(RelativeDuration):
     def __init__(self,game,w,h,duration):
-        DurationProjectile.__init__(self,game,game.player.pos.x,game.player.pos.x,w,h,duration)
+        RelativeDuration.__init__(self,game,w,h,duration)
         try:
             self.dir = self.game.player.vel.normalize()
         except:
@@ -136,15 +139,18 @@ class RelativeDirectionDuration(RelativeDuration):
 
 class SpinningRelativeDuration(RelativeDuration):
     def __init__(self,game,w,h,duration,speed):
-        DurationProjectile.__init__(self,game,game.player.pos.x,game.player.pos.x,w,h,duration)
+        RelativeDuration.__init__(self,game,w,h,duration)
+        #direction facing
         self.dir = 0
-        self.dirvec = vec(1,0)
+        #speed
         self.speed = speed
     def update(self):
         super().update()
+        #loops dir from 0 -> 2pi with self.speed per tick
         self.dir = (self.dir + self.speed) % 6.14318
 
 ##Weapons
+
 
 class Earthquake(DurationProjectile):
     BaseStats = {
@@ -162,26 +168,27 @@ class Earthquake(DurationProjectile):
         self.size = Earthquake.BaseStats["size"]
         super().__init__(game,x,y,self.size,self.size,Earthquake.BaseStats["duration"])
         self.lines = []
-        for i in range(25):
-            self.lines.append([vec(randint(-90,90)/100,randint(-90,90)/100),vec(randint(-10,10)/100,randint(-10,10)/100)])
+        #Bunch of lines branching out from center
+        for i in range(50):
+            self.lines.append([vec(randint(10,90)/100,randint(10,90)/100),vec(randint(-10,10)/100,randint(-10,10)/100)])
     
     def update(self):
         self.killcheck()
         self.clear()
         for i in self.lines:
-            pg.draw.lines(self.image,(150,50,0),False,((self.size/2,self.size/2),(i[0].x*self.size,i[0].y*self.size),((i[1].x+i[0].x)*self.size,(i[1].y+i[0].y)*self.size)),5)
-        pg.draw.circle(self.image,(100,20,0),(self.size/2,self.size/2),self.size*0.1,0)
+            pg.draw.lines(self.image,(150,50,0),False,((self.size/2,self.size/2),(i[0].x*self.size,i[0].y*self.size),((i[1].x+i[0].x)*self.size,(i[1].y+i[0].y)*self.size)),3)
         self.draw()
         self.collide()
         if Earthquake.BaseStats["ultimate"] == True:
-            self.size *= 1.05
+            self.dmg *= 1.05
     def collide(self):
-        hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
-        for i in hits:
-            if self.dmgtick.ready():
+        if self.dmgtick.ready():
+            hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
+            for i in hits:
                 i.health -= self.dmg
                 self.dmgtick.start()
 
+#Uses a for loop with range amount to create equal circles on a radius around the player, uses mask collide to allow for each circle to collide seperately
 class Landslide(SpinningRelativeDuration):
     BaseStats = {
         "dmg": 15,
@@ -196,20 +203,22 @@ class Landslide(SpinningRelativeDuration):
     }
     def __init__(self,game):
         self.dmg = Landslide.BaseStats["dmg"]
-        self.size = TILESIZE*12
-        self.dmgtick = Cooldown(float(Landslide.BaseStats["dmgtick"]))
-        SpinningRelativeDuration.__init__(self,game,self.size,self.size,Landslide.BaseStats['duration'],Landslide.BaseStats['speed'])
         self.spinradius = Landslide.BaseStats["spinradius"]
         self.rockradius = Landslide.BaseStats["rockradius"]
+        self.size = self.spinradius*2 + self.rockradius*2
+
+        self.dmgtick = Cooldown(float(Landslide.BaseStats["dmgtick"]))
+        SpinningRelativeDuration.__init__(self,game,self.size,self.size,Landslide.BaseStats['duration'],Landslide.BaseStats['speed'])
     def update(self):
         self.clear()
         self.killcheck()
         super().update()
         for i in range(Landslide.BaseStats['amount']):
             pg.draw.circle(self.image,(150,100,70),(self.size/2+((sin(self.dir+(6.14*i/Landslide.BaseStats['amount'])))*self.spinradius),self.size/2+((cos(self.dir+(6.14*i/Landslide.BaseStats['amount']))))*self.spinradius),self.rockradius)
+        #Ultimate with extra layer
         if Landslide.BaseStats["ultimate"] == True:  
             for i in range(Landslide.BaseStats['amount']):
-                pg.draw.circle(self.image,(150,100,70),(self.size/2+((sin(self.dir+(6.14*i/Landslide.BaseStats['amount'])))*self.spinradius*2),self.size/2+((cos(self.dir+(6.14*i/Landslide.BaseStats['amount']))))*self.spinradius*2),self.rockradius)
+                pg.draw.circle(self.image,(150,100,70),(self.size/2+((sin(self.dir+(6.14*i/Landslide.BaseStats['amount'])))*(self.spinradius/2)),self.size/2-((cos(self.dir+(6.14*i/Landslide.BaseStats['amount']))))*(self.spinradius/2)),self.rockradius)
         self.draw()
         self.collide()
     def collide(self):
@@ -221,6 +230,8 @@ class Landslide(SpinningRelativeDuration):
                     i.health -= self.dmg
                     self.dmgtick.start()
 
+#The tornado spins around the player and does damage to mobs near it. 
+# It uses a rect collide which is mildy innacurate but leagues faster than the amount of maskcollides that the dmgtick could justify
 class Tornado(RelativeDuration):
     BaseStats = {
         "dmg": 2,
@@ -302,8 +313,8 @@ class Plague(MassDuration):
         "dmg": 5,
         "cooldown": Cooldown(5000),
         "duration": 2000,
-        "dmgtick": 20,
-        "amount": 20,
+        "dmgtick": 40,
+        "amount": 10,
         "speed": 1,
         "ultimate":False,
     }
@@ -313,14 +324,13 @@ class Plague(MassDuration):
         self.dmgtick = Cooldown(Plague.BaseStats['dmgtick'])
         self.speed = Plague.BaseStats["speed"]
         for i in self.projectiles:
-            i[2] = vec(randint(-1,1),randint(-1,1))
+            i[2].x += randint(-10,10)/100 * self.speed
+            i[2].y += randint(-10,10)/100 * self.speed
     def update(self):
         self.killcheck()
         MassDuration.update(self)
         self.clear()
         for i in self.projectiles:
-            i[2].x += randint(-10,10)/100 * self.speed
-            i[2].y += randint(-10,10)/100 * self.speed
             pg.draw.rect(self.image,(0,150,0),(i[0],i[1]))
         self.draw()
         if Plague.BaseStats['ultimate'] == True:
@@ -343,3 +353,4 @@ class Plague(MassDuration):
                 if ["Poison", 1] not in i.effects:
                     i.effects.append(["Poison", 1])
                 self.dmgtick.start()
+

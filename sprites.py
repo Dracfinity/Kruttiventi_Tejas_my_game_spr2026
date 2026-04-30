@@ -49,9 +49,8 @@ class Player(Sprite):
             "amount": 1,
         }
         self.armory = Armory(self.game)
-        self.armory.upgrade("Landslide")
         #Experience and Levels
-        self.level = 0;
+        self.level = 1;
         self.exp = 0;
         #FireRate
         self.firerate = Cooldown(500)
@@ -139,8 +138,8 @@ class Player(Sprite):
                 self.image = pg.transform.rotate(self.standing_frames[self.current_frame], self.vel.angle_to(vec(1,0)))
     
     def levelhandle(self):
-        if(self.exp > self.level*sqrt(self.level)):
-            self.exp = 0;
+        if(self.exp >= self.level**2):
+            self.exp -= self.level**2;
             LevelUp(self.game)
             self.level += 1;
 
