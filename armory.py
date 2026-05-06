@@ -1,19 +1,20 @@
 import pygame as pg
 from settings import *
 from utils import Camera,Cooldown
-from random import randint,sample
-from math import sin,cos
+from random import randint,sample,random
+from math import sin,cos,sqrt
 
 Sprite = pg.sprite.Sprite
 vec = pg.math.Vector2
 
-
+def Distance(x1,y1,x2,y2):
+    return sqrt((x1-x2)**2+(y1-y2)**2)
 
 class Armory():
     def __init__(self,game):
         self.owned = [[None,0],[None,0],[None,0],[None,0],[None,0],[None,0]]
         self.game = game
-        self.allWeapons = ["Earthquake","Tsunami","Tornado","Landslide","Plague"]
+        self.allWeapons = ["Earthquake","Tsunami","Tornado","Landslide","Plague","Wildfire"]
     def upgrade(self,weapon):
         for i in range(len(self.owned)):
             if self.owned[i][0] == weapon:
@@ -31,7 +32,7 @@ class Armory():
                 full = False;
         
         if full == False:
-            self.possible = ["Earthquake","Tsunami","Tornado","Landslide","Plague"]
+            self.possible = self.allWeapons
             for i in self.owned:
                 if i[1] == 7 and i[0] in self.possible:
                     self.possible.remove(i[0])
@@ -50,7 +51,6 @@ class Armory():
                 return i[1]
         return 0;
             
-
 
     def handle(self):
         for i in self.owned:
@@ -77,6 +77,16 @@ class Armory():
                     if Landslide.BaseStats["cooldown"].ready():
                         Landslide.BaseStats["cooldown"].start()
                         Landslide(self.game)
+                case "Wildfire":
+                    if Wildfire.BaseStats["cooldown"].ready():
+                        if Wildfire.BaseStats["ultimate"]:
+                            Wildfire.BaseStats["cooldown"].start()
+                            Wildfire(self.game)
+                            Wildfire(self.game)
+                            Wildfire(self.game)
+                        else:
+                            Wildfire.BaseStats["cooldown"].start()
+                            Wildfire(self.game)
 
 ##WeaponStructure
 class BaseProjectile(Sprite):
@@ -149,15 +159,55 @@ class SpinningRelativeDuration(RelativeDuration):
         #loops dir from 0 -> 2pi with self.speed per tick
         self.dir = (self.dir + self.speed) % 6.14318
 
+class BulletProjectile(BaseProjectile):
+    def __init__(self,game,x,y,w,h,vx,vy):
+        BaseProjectile.__init__(self,game,x,y,w,h)
+        self.vx = vx
+        self.vy = vy
+    def update(self):
+        BaseProjectile.update(self)
+        self.pos.x += self.vx
+        self.pos.y += self.vy
+    def killcheck(self):
+        if self.pos.x < -WIDTH/2 or self.pos.x > WIDTH*1.5 or self.pos.y < -HEIGHT/2 or self.pos.y > HEIGHT*1.5:
+            self.kill()
+
 ##Weapons
 
+class Wildfire(BulletProjectile):
+    BaseStats = {
+        "burntier": 0.5,
+        "cooldown": Cooldown(500),
+        "dmgtick": 40,
+        "speed": 10,
+        "size":TILESIZE/4,
+        "ultimate": False
+    }
+    def __init__(self,game):
+        BulletProjectile.__init__(self,game,game.player.pos.x,game.player.pos.y,Wildfire.BaseStats["size"],Wildfire.BaseStats["size"],(random()-0.5)*2*Wildfire.BaseStats["speed"],(random()-0.5)*2*Wildfire.BaseStats["speed"])
+        self.dmgtick = Cooldown(Wildfire.BaseStats["dmgtick"])
+        self.dmg = Wildfire.BaseStats["burntier"]
+    def update(self):
+        BulletProjectile.update(self)
+        self.clear()
+        self.image.fill((255,100,0))
+        self.draw()
+        self.collide()
+    def collide(self):
+        if self.dmgtick.ready():
+            hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
+            for i in hits:
+                if ["Poison", self.dmg] not in i.effects:
+                    i.effects.append(["Poison", self.dmg])
+                self.dmgtick.start()
+        
 
 class Earthquake(DurationProjectile):
     BaseStats = {
-        "dmg": 50,
+        "dmg": 25,
         "cooldown": Cooldown(1000),
         "duration": 200,
-        "dmgtick": 100,
+        "dmgtick": 40,
         "size":TILESIZE*5,
         "ultimate": False
     }
@@ -350,7 +400,7 @@ class Plague(MassDuration):
             hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
             for i in hits:
                 i.health -= self.dmg
-                if ["Poison", 1] not in i.effects:
-                    i.effects.append(["Poison", 1])
+                if ["Poison", 0.25] not in i.effects:
+                    i.effects.append(["Poison", 0.25])
                 self.dmgtick.start()
 

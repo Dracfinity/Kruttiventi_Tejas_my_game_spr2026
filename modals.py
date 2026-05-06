@@ -36,7 +36,7 @@ Options = {
             ["Ultimate:Slow all enemies \n in the range of the Tornado","self.game.player.armory.upgrade('Tornado');Tornado.BaseStats['ultimate']=True"],
             ],
     "Earthquake":[
-            ["Random, high damage earthquake that \n appear for short times at spots on your screen","self.game.player.armory.upgrade('Earthquake');"],
+            ["Random, high damage earthquake \n that appear for short times \n at spots on your screen","self.game.player.armory.upgrade('Earthquake');"],
             ["Decrease Earthquake Cooldown by 20%","self.game.player.armory.upgrade('Earthquake');Earthquake.BaseStats['cooldown'].time*=0.8"],
             ["Increase Earthquake Dmg by 20","self.game.player.armory.upgrade('Earthquake');Earthquake.BaseStats['dmg'] += 20"],
             ["Increase Earthquake Size by 50%","self.game.player.armory.upgrade('Earthquake');Earthquake.BaseStats['size'] *= 1.5"],
@@ -51,7 +51,7 @@ Options = {
             ["Increase Landslide Spin speed by 100%","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['speed']*=2"],
             ["Make the radius the Landslides\n orbit around 75% size","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['spinradius']*=0.75"],
             ["Increase Landslide Rock Size by 50%","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['rockradius']*=1.5"],
-            ["Ultimate: Adds two radii of \n landslides, spinning twice","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['ultimate']=True;self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['spinradius']*=2"],
+            ["Ultimate: Adds two radii of \n landslides, spinning twice in opposite directions","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['ultimate']=True;self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['spinradius']*=2"],
     ],
     "Plague":[
             ["Flies that appear from you \n and damage things near you","self.game.player.armory.upgrade('Plague');"],
@@ -60,7 +60,7 @@ Options = {
             ["Double the amount of Flies","self.game.player.armory.upgrade('Plague');Plague.BaseStats['amount'] *= 2"],
             ["Increase Plague Duration by 100%","self.game.player.armory.upgrade('Plague');Plague.BaseStats['duration'] *= 2"],
             ["Increase Plague Dmg by 5","self.game.player.armory.upgrade('Plague');Plague.BaseStats['dmg'] += 5"],
-            ["Ultimate: Poisonous Flies that \n deal Damage over time to enemies","self.game.player.armory.upgrade('Plague');Plague.BaseStats['ultimate']=True"],
+            ["Ultimate: The Plague is Airborne, \n and poisons all onscreen enemies","self.game.player.armory.upgrade('Plague');Plague.BaseStats['ultimate']=True"],
     ],
     "Tsunami":[
             ["A Wave that shoots infront of you \n at high speeds, melting enemies","self.game.player.armory.upgrade('Tsunami')"],
@@ -70,6 +70,15 @@ Options = {
             ["Decrease Tsunami Hit Speed by 25%","self.game.player.armory.upgrade('Tsunami');Tsunami.BaseStats['dmgtick']*=0.75"],
             ["Increase Tsunami Duration by 50%","self.game.player.armory.upgrade('Tsunami');Tsunami.BaseStats['duration']*=1.5"],
             ["Ultimate: Fire another Tsunami behind you","self.game.player.armory.upgrade('Tsunami');Tsunami.BaseStats['ultimate'] = True"],
+    ],
+    "Wildfire":[
+            ["A Quick Firing Bullet that shoots \n at enemies, burning them, \n dealing Damage over time","self.game.player.armory.upgrade('Wildfire')"],
+            ["Increase Wildfire burn damage by 100%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['burntier']*=2"],
+            ["Increase the Wildfire size by 50%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['size']*=1.5"],
+            ["Decrease Wildfire Speed by 50%, spending more time on screen","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['speed']*=0.5"],
+            ["Decrease Wildfire time between hits by 25%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['dmgtick']*=0.75"],
+            ["Decrease Wildfire Cooldown by 50%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['cooldown'].time*=0.5"],
+            ["Ultimate: Make the wildfire attack \n 3 times in a row","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['ultimate'] = True"],
     ],
     "Full":[
         ["",""]

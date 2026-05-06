@@ -17,7 +17,6 @@ class Spawner():
     def update(self):
         self.time = pg.time.get_ticks();
         #print(self.handledmobs)
-        #BaseMob
         if len(self.game.all_mobs) < MOB_CAP:
             if self.BaseMobCooldown.ready():
                 for i in range(self.getAmount(0,40,3)):
@@ -35,6 +34,10 @@ class Spawner():
                 for i in range(self.getAmount(90,5,1)):
                     self.spawn(NormalMob)
                 self.TankMobCooldown.start();
+        #Cull mobs too far offscreen
+        for i in self.game.all_mobs:
+            if WIDTH*2<i.rect.x or -WIDTH>i.rect.x or -HEIGHT > i.rect.y or 2*HEIGHT < i.rect.y:
+                i.kill()
 
     def getAmount(self,begintime,maximum,change):
         return max(0,min(int(self.time/(1000*change))-(begintime*change),maximum))
