@@ -64,7 +64,6 @@ class Game:
         self.all_projectiles = pg.sprite.Group()
         self.player = Player(self, 0,0)
         self.spawner = Spawner(self)
-        LevelUp(self)
         self.run()
 
     def run(self):
@@ -99,6 +98,8 @@ class Game:
         justpressed = pg.key.get_just_pressed()
         if justpressed[pg.K_p]:
             PauseModal(self)
+        if justpressed[pg.K_l]:
+            LevelUp(self)
     
 
     def quit(self):

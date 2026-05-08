@@ -8,8 +8,9 @@ def PauseModal(game):
     others = [["#444444aa",pg.Rect(0,0,WIDTH,HEIGHT)],
               pg.font.SysFont("arial",50).render("Pause",True,"#ffffffff"),
             ]
+    weapons = game.player.armory.owned
     buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Continue","self.game.playing = True",game),
-               Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit","pg.quit()",game),]
+               Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit Game","pg.quit()",game),]
     while game.playing == False:
         mousepos = pg.mouse.get_pos()
         isdown = pg.mouse.get_pressed()
@@ -21,6 +22,29 @@ def PauseModal(game):
         for i in buttons:
             i.check(mousepos,isdown[0])
             i.draw()
+        for j in weapons:
+            match(j[0]):
+                case "Earthquake":
+                    item = pg.Surface((TILESIZE*2,TILESIZE*2))
+                    pg.draw.circle(item,(150,50,0),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*2*j[1]/6),TILESIZE*0.5))
+                case "Tsunami":
+                    item = pg.Surface((TILESIZE*2,TILESIZE*2))
+                    pg.draw.circle(item,(100,100,255),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
+                    pg.draw.polygon(item,(100,100,255),((TILESIZE*0.25,TILESIZE*0.25),(TILESIZE*0.25,TILESIZE*1.25),(TILESIZE*1.75,TILESIZE*0.75)))
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*2*j[1]/6),TILESIZE*0.5))
+                case "Tornado":
+                    item = pg.Surface((TILESIZE*2,TILESIZE*2))
+                    pg.draw.circle(item,(200,200,200),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*2*j[1]/6),TILESIZE*0.5))
+                case "Landslide":
+                    item = pg.Surface((TILESIZE*2,TILESIZE*2))
+                    pg.draw.circle(item,(150,50,0),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*2*j[1]/6),TILESIZE*0.5))
+                case "Earthquake":
+                    item = pg.Surface((TILESIZE*2,TILESIZE*2))
+                    pg.draw.circle(item,(150,50,0),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*2*j[1]/6),TILESIZE*0.5))
         pg.display.flip()
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -75,10 +99,19 @@ Options = {
             ["A Quick Firing Bullet that shoots \n at enemies, burning them, \n dealing Damage over time","self.game.player.armory.upgrade('Wildfire')"],
             ["Increase Wildfire burn damage by 100%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['burntier']*=2"],
             ["Increase the Wildfire size by 50%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['size']*=1.5"],
-            ["Decrease Wildfire Speed by 50%, spending more time on screen","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['speed']*=0.5"],
-            ["Decrease Wildfire time between hits by 25%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['dmgtick']*=0.75"],
+            ["Decrease Wildfire Speed by 50%,\n spending more time on screen","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['speed']*=0.5"],
+            ["Decrease Wildfire time between \n hits by 25%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['dmgtick']*=0.75"],
             ["Decrease Wildfire Cooldown by 50%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['cooldown'].time*=0.5"],
             ["Ultimate: Make the wildfire attack \n 3 times in a row","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['ultimate'] = True"],
+    ],
+    "Rain":[
+            ["This... isnt supposed to appear \n Get a Rain projectile ","self.game.player.armory.upgrade('Rain')"],
+            ["Double damage of Rain","self.game.player.armory.upgrade('Rain');Rain.BaseStats['dmg']*=2"],
+            ["Increase the Rain pierce by 100%","self.game.player.armory.upgrade('Rain');Rain.BaseStats['pierce']*=2"],
+            ["Decrease Rain Cooldown by 50%, \n attacking at double the rate","self.game.player.armory.upgrade('Rain');Rain.BaseStats['cooldown'].time*=0.5"],
+            ["Decrease Rain time between hits by 25%","self.game.player.armory.upgrade('Rain');Rain.BaseStats['dmgtick']*=0.75"],
+            ["Increase the Pierce of Rain by 200%","self.game.player.armory.upgrade('Rain');Rain.BaseStats['pierce']*=3"],
+            ["Ultimate: Make the Rain's attack \n freeze enemies in place","self.game.player.armory.upgrade('Rain');Rain.BaseStats['ultimate'] = True"],
     ],
     "Full":[
         ["",""]

@@ -12,9 +12,9 @@ def Distance(x1,y1,x2,y2):
 
 class Armory():
     def __init__(self,game):
-        self.owned = [[None,0],[None,0],[None,0],[None,0],[None,0],[None,0]]
+        self.owned = [["Rain",1],[None,0],[None,0],[None,0]]
         self.game = game
-        self.allWeapons = ["Earthquake","Tsunami","Tornado","Landslide","Plague","Wildfire"]
+        self.allWeapons = ["Earthquake","Tsunami","Tornado","Landslide","Plague","Wildfire", "Rain"]
     def upgrade(self,weapon):
         for i in range(len(self.owned)):
             if self.owned[i][0] == weapon:
@@ -87,6 +87,10 @@ class Armory():
                         else:
                             Wildfire.BaseStats["cooldown"].start()
                             Wildfire(self.game)
+                case "Rain":
+                    if Rain.BaseStats["cooldown"].ready():
+                        Rain.BaseStats["cooldown"].start()
+                        Rain(self.game)
 
 ##WeaponStructure
 class BaseProjectile(Sprite):
@@ -169,7 +173,7 @@ class BulletProjectile(BaseProjectile):
         self.pos.x += self.vx
         self.pos.y += self.vy
     def killcheck(self):
-        if self.pos.x < -WIDTH/2 or self.pos.x > WIDTH*1.5 or self.pos.y < -HEIGHT/2 or self.pos.y > HEIGHT*1.5:
+        if self.rect.x < -WIDTH/2 or self.rect.x > WIDTH*1.5 or self.rect.y < -HEIGHT/2 or self.rect.y > HEIGHT*1.5:
             self.kill()
 
 ##Weapons
@@ -189,6 +193,7 @@ class Wildfire(BulletProjectile):
         self.dmg = Wildfire.BaseStats["burntier"]
     def update(self):
         BulletProjectile.update(self)
+        self.killcheck()
         self.clear()
         self.image.fill((255,100,0))
         self.draw()
@@ -404,3 +409,44 @@ class Plague(MassDuration):
                     i.effects.append(["Poison", 0.25])
                 self.dmgtick.start()
 
+#Basic Starting Weapon, extension of bullet projectile class
+class Rain(BulletProjectile):
+    BaseStats = {
+        "dmg": 15,
+        "cooldown": Cooldown(750),
+        "dmgtick": 40,
+        "speed": 10,
+        "size":TILESIZE/6,
+        "pierce":2,
+        "ultimate": False
+    }
+    def __init__(self,game):
+        BulletProjectile.__init__(self,game,game.player.pos.x,game.player.pos.y,Rain.BaseStats["size"],Rain.BaseStats["size"],(random()-0.5)*2*Rain.BaseStats["speed"],(random()-0.5)*2*Rain.BaseStats["speed"])
+        self.dmgtick = Cooldown(Rain.BaseStats["dmgtick"])
+        self.dmg = Rain.BaseStats["dmg"]
+        self.pierce = Rain.BaseStats["pierce"]
+    def update(self):
+        BulletProjectile.update(self)
+        self.clear()
+        self.image.fill((0,100,255))
+        self.draw()
+        self.collide()
+        self.killcheck()
+        if(self.pierce < 0):
+            self.kill()
+    def collide(self):
+        if self.dmgtick.ready():
+            if Rain.BaseStats['ultimate']:
+                hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
+                for i in hits:
+                    self.pierce-=1
+                    i.health -= self.dmg
+                    if ["Frozen", 50] not in i.effects:
+                        i.effects.append(["Frozen", 50])
+                    self.dmgtick.start()
+            else:
+                hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
+                for i in hits:
+                    self.pierce-=1
+                    i.health -= self.dmg
+                    self.dmgtick.start()

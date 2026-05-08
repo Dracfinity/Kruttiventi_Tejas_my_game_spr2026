@@ -98,6 +98,7 @@ class Mob(Sprite):
                     else:
                         self.speed = self.basespeed
                         self.effects.pop(i)
+                        break;
 
 class WeakMob(Mob):
     def __init__(self, game, x, y):
@@ -125,6 +126,12 @@ class TankMob(Mob):
 
 class StrongMob(Mob):
     def __init__(self, game, x, y):
-        super().__init__(game, x, y, 100, TILESIZE, pg.Color(255,0,255), 1.5 , 4)
+        super().__init__(game, x, y, 1000, TILESIZE, pg.Color(255,0,255), 1.5 , 4)
+    def update(self):
+        super().update()
+
+class DeathMob(Mob):
+    def __init__(self, game, x, y):
+        super().__init__(game, x, y, 99999, TILESIZE, pg.Color(255,0,255), 10 , 4)
     def update(self):
         super().update()
