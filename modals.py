@@ -9,7 +9,7 @@ def PauseModal(game):
               pg.font.SysFont("arial",50).render("Pause",True,"#ffffffff"),
             ]
     weapons = game.player.armory.owned
-    buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Continue","self.game.playing = True",game),
+    buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Continue","self.game.playing = True; self.game.prevtime = pg.time.get_ticks()",game),
                Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit Game","pg.quit()",game),]
     while game.playing == False:
         mousepos = pg.mouse.get_pos()
@@ -22,36 +22,68 @@ def PauseModal(game):
         for i in buttons:
             i.check(mousepos,isdown[0])
             i.draw()
-        for j in weapons:
-            match(j[0]):
+        for j in range(len(weapons)):
+            item = pg.Surface((TILESIZE*2,TILESIZE*2))
+            match(weapons[j][0]):
                 case "Earthquake":
-                    item = pg.Surface((TILESIZE*2,TILESIZE*2))
                     pg.draw.circle(item,(150,50,0),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
-                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*2*j[1]/6),TILESIZE*0.5))
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*1.8*weapons[j][1]/6)+TILESIZE*0.1,TILESIZE*0.5))
                 case "Tsunami":
-                    item = pg.Surface((TILESIZE*2,TILESIZE*2))
-                    pg.draw.circle(item,(100,100,255),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
                     pg.draw.polygon(item,(100,100,255),((TILESIZE*0.25,TILESIZE*0.25),(TILESIZE*0.25,TILESIZE*1.25),(TILESIZE*1.75,TILESIZE*0.75)))
-                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*2*j[1]/6),TILESIZE*0.5))
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*1.8*weapons[j][1]/6)+TILESIZE*0.1,TILESIZE*0.5))
                 case "Tornado":
-                    item = pg.Surface((TILESIZE*2,TILESIZE*2))
-                    pg.draw.circle(item,(200,200,200),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
-                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*2*j[1]/6),TILESIZE*0.5))
+                    pg.draw.circle(item,(255,255,255),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*1.8*weapons[j][1]/6)+TILESIZE*0.1,TILESIZE*0.5))
                 case "Landslide":
-                    item = pg.Surface((TILESIZE*2,TILESIZE*2))
-                    pg.draw.circle(item,(150,50,0),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
-                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*2*j[1]/6),TILESIZE*0.5))
-                case "Earthquake":
-                    item = pg.Surface((TILESIZE*2,TILESIZE*2))
-                    pg.draw.circle(item,(150,50,0),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
-                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*2*j[1]/6),TILESIZE*0.5))
+                    pg.draw.circle(item,(150,100,70),(TILESIZE,TILESIZE*0.75),TILESIZE*0.5)
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*1.8*weapons[j][1]/6)+TILESIZE*0.1,TILESIZE*0.5))
+                case "Plague":
+                    pg.draw.rect(item,(0,255,0),(TILESIZE*0.5,TILESIZE*0.25,TILESIZE,TILESIZE))
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*1.8*weapons[j][1]/6)+TILESIZE*0.1,TILESIZE*0.5))
+                case "Wildfire":
+                    pg.draw.rect(item,(255,0,0),(TILESIZE*0.5,TILESIZE*0.25,TILESIZE,TILESIZE))
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*1.8*weapons[j][1]/6)+TILESIZE*0.1,TILESIZE*0.5))
+                case "Rain":
+                    pg.draw.rect(item,(0,100,255),(TILESIZE*0.5,TILESIZE*0.25,TILESIZE,TILESIZE))
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*1.8*weapons[j][1]/6)+TILESIZE*0.1,TILESIZE*0.5))
+            game.screen.blit(item,(TILESIZE*(3*j+1),TILESIZE))
         pg.display.flip()
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
+
+def MainMenuModal(game):
+    game.playing = False;
+    others = [["#444444aa",pg.Rect(0,0,WIDTH,HEIGHT)],
+              pg.font.SysFont("arial",50).render("Calamity Mage",True,"#ffffffff"),
+            ]
+    buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Start","self.game.playing = True; self.game.prevtime = pg.time.get_ticks()",game),
+               Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit Game","pg.quit()",game),]
+    while game.playing == False:
+        mousepos = pg.mouse.get_pos()
+        isdown = pg.mouse.get_pressed()
+        overlay = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
+        
+        pg.draw.rect(overlay,others[0][0],others[0][1])
+        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
+        game.screen.blit(overlay,(0,0))
+        for i in buttons:
+            i.check(mousepos,isdown[0])
+            i.draw()
+        pg.display.flip()
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+
 Options = {
+    #The Hex just makes you worse until you are level 7, where it super buffs you;
+    "Hex":[
+            ["Curses YOU, sets health to 1, only available in the 1st round", "self.game.player.armory.upgrade('Hex');self.game.player.maxhealth=1;self.game.player.health=1;self.game.player.armory.allWeapons.append('Hex')"],
+            ["Upgrade Hex, you now have reversed controls, and move backwards", "self.game.player.armory.upgrade('Hex');self.game.player.SPEED*=-1"],
+            ["Upgrade Hex, you now have to deal with slippery controls, like moving on ice","self.game.player.armory.upgrade('Hex');self.game.player.FRICTION=0.99"],
+    ],
     "Tornado":[
-            ["A low damage tornado that spins \n around the character","self.game.player.armory.upgrade('Tornado');"],
+            ["A low damage tornado that spins \n around the character","self.game.player.armory.upgrade('Tornado')"],
             ["Increase Tornado Damage by 3 per hit","self.game.player.armory.upgrade('Tornado');Tornado.BaseStats['dmg']+=3"],
             ["Increase Tornado Size by 50%","self.game.player.armory.upgrade('Tornado');Tornado.BaseStats['size']*=1.5"],
             ["Make Tornado Attack 25% more","self.game.player.armory.upgrade('Tornado');Tornado.BaseStats['dmgtick']*=0.75"],
@@ -60,7 +92,7 @@ Options = {
             ["Ultimate:Slow all enemies \n in the range of the Tornado","self.game.player.armory.upgrade('Tornado');Tornado.BaseStats['ultimate']=True"],
             ],
     "Earthquake":[
-            ["Random, high damage earthquake \n that appear for short times \n at spots on your screen","self.game.player.armory.upgrade('Earthquake');"],
+            ["Random, high damage earthquake \n that appear for short times \n at spots on your screen","self.game.player.armory.upgrade('Earthquake')"],
             ["Decrease Earthquake Cooldown by 20%","self.game.player.armory.upgrade('Earthquake');Earthquake.BaseStats['cooldown'].time*=0.8"],
             ["Increase Earthquake Dmg by 20","self.game.player.armory.upgrade('Earthquake');Earthquake.BaseStats['dmg'] += 20"],
             ["Increase Earthquake Size by 50%","self.game.player.armory.upgrade('Earthquake');Earthquake.BaseStats['size'] *= 1.5"],
@@ -69,7 +101,7 @@ Options = {
             ["Ultimate: Slowly increases in dmg \n over its duration","self.game.player.armory.upgrade('Earthquake');Earthquake.BaseStats['ultimate']=True"],
     ],
     "Landslide":[
-            ["Rocks that spin around you, \n sliding in a radius around you","self.game.player.armory.upgrade('Landslide');"],
+            ["Rocks that spin around you, \n sliding in a radius around you","self.game.player.armory.upgrade('Landslide')"],
             ["Increase Landslide Damage by 5 per hit","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['dmg']+=5"],
             ["Add 2 to the Amount of Landslides","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['amount']+=2"],
             ["Increase Landslide Spin speed by 100%","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['speed']*=2"],
@@ -78,7 +110,7 @@ Options = {
             ["Ultimate: Adds two radii of \n landslides, spinning twice in opposite directions","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['ultimate']=True;self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['spinradius']*=2"],
     ],
     "Plague":[
-            ["Flies that appear from you \n and damage things near you","self.game.player.armory.upgrade('Plague');"],
+            ["Flies that appear from you \n and damage things near you","self.game.player.armory.upgrade('Plague')"],
             ["Decrease Plague Cooldown by 20%","self.game.player.armory.upgrade('Plague');Plague.BaseStats['cooldown'].time*=0.8"],
             ["Increase Fly Speed by 100%","self.game.player.armory.upgrade('Plague');Plague.BaseStats['speed'] *= 2"],
             ["Double the amount of Flies","self.game.player.armory.upgrade('Plague');Plague.BaseStats['amount'] *= 2"],
@@ -120,14 +152,14 @@ Options = {
 
 
 def LevelUp(game):
+
     game.playing = False;
-    
     #Get Possible Weapons to upgrade
     choices = game.player.armory.getOptions()
 
-    buttons = [ Button(WIDTH/13,HEIGHT/10,3*WIDTH/13,8*HEIGHT/10,(150,150,150),(100,100,100),Options[choices[0]][game.player.armory.getLevel(choices[0])][0],Options[choices[0]][game.player.armory.getLevel(choices[0])][1],game),
-                Button(5*WIDTH/13,HEIGHT/10,3*WIDTH/13,8*HEIGHT/10,(150,150,150),(100,100,100),Options[choices[1]][game.player.armory.getLevel(choices[1])][0],Options[choices[1]][game.player.armory.getLevel(choices[1])][1],game),
-                Button(9*WIDTH/13,HEIGHT/10,3*WIDTH/13,8*HEIGHT/10,(150,150,150),(100,100,100),Options[choices[2]][game.player.armory.getLevel(choices[2])][0],Options[choices[2]][game.player.armory.getLevel(choices[2])][1],game)
+    buttons = [ Button(WIDTH/10,2*HEIGHT/16,8*WIDTH/10,3*HEIGHT/16,(150,150,150),(100,100,100),Options[choices[0]][game.player.armory.getLevel(choices[0])][0],Options[choices[0]][game.player.armory.getLevel(choices[0])][1],game),
+                Button(WIDTH/10,7*HEIGHT/16,8*WIDTH/10,3*HEIGHT/16,(150,150,150),(100,100,100),Options[choices[1]][game.player.armory.getLevel(choices[1])][0],Options[choices[1]][game.player.armory.getLevel(choices[1])][1],game),
+                Button(WIDTH/10,12*HEIGHT/16,8*WIDTH/10,3*HEIGHT/16,(150,150,150),(100,100,100),Options[choices[2]][game.player.armory.getLevel(choices[2])][0],Options[choices[2]][game.player.armory.getLevel(choices[2])][1],game)
     ]
 
     
@@ -141,6 +173,7 @@ def LevelUp(game):
             x = i.check(mousepos,isdown[0])
             if x == True:
                 game.playing = True;
+                game.prevtime = pg.time.get_ticks()
             i.draw()
         pg.display.flip()
         for event in pg.event.get():
@@ -163,11 +196,8 @@ class Button():
         self.truecolor = c
         self.dimmedcolor = dc
         self.text = text
-        self.font = pg.font.SysFont("arial", 50);
+        self.font = pg.font.SysFont("arial", TEXTSIZE);
         self.font_render = self.font.render(self.text,True,(255,255,255))
-        self.font_rect = self.font_render.get_rect()
-        self.scale_factor = self.w/self.font_rect.width*0.9
-        self.font_render = pg.transform.scale_by(self.font_render,self.scale_factor)
         self.action = action
     def check(self,mousepos, isdown):
         if self.x<mousepos[0]<self.x+self.w and self.y<mousepos[1]<self.y+self.h and isdown and self.notpressed:

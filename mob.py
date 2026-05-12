@@ -15,7 +15,7 @@ class Spawner():
         self.TankMobCooldown = Cooldown(10000)
         self.StrongMobCooldown = Cooldown(2000)
     def update(self):
-        self.time = pg.time.get_ticks();
+        self.time = self.game.time;
         #print(self.handledmobs)
         if len(self.game.all_mobs) < MOB_CAP:
             if self.BaseMobCooldown.ready():
@@ -28,11 +28,11 @@ class Spawner():
                 self.NormalMobCooldown.start();
             if self.DashMobCooldown.ready():
                 for i in range(self.getAmount(40,30,2)):
-                    self.spawn(NormalMob)
+                    self.spawn(DashMob)
                 self.DashMobCooldown.start();
             if self.TankMobCooldown.ready():
                 for i in range(self.getAmount(90,5,1)):
-                    self.spawn(NormalMob)
+                    self.spawn(TankMob)
                 self.TankMobCooldown.start();
         #Cull mobs too far offscreen
         for i in self.game.all_mobs:
@@ -59,8 +59,8 @@ class Mob(Sprite):
         self.groups = game.all_sprites, game.all_mobs
         Sprite.__init__(self,self.groups)
         self.game = game
-        self.image = pg.Surface((TILESIZE, TILESIZE))
-        self.image.fill(RED)
+        self.image = pg.Surface((size, size))
+        self.image.fill((0,0,0))
         self.rect = self.image.get_rect()
         self.pos = vec(self.game.player.pos.x-WIDTH/2+x,self.game.player.pos.y-HEIGHT/2+y)
         self.maxhealth = health
@@ -108,13 +108,13 @@ class WeakMob(Mob):
 
 class NormalMob(Mob):
     def __init__(self, game, x, y):
-        super().__init__(game, x, y, 500, TILESIZE*1.5, pg.Color(255,0,0), 1 , 3)
+        super().__init__(game, x, y, 500, TILESIZE*1.5, pg.Color(255,0,0), 1 , 2)
     def update(self):
         super().update()
 
 class DashMob(Mob):
     def __init__(self, game, x, y):
-        super().__init__(game, x, y, 100, TILESIZE*0.75, pg.Color(50,150,255), 3 , 2)
+        super().__init__(game, x, y, 100, TILESIZE*0.75, pg.Color(50,150,255), 3 , 3)
     def update(self):
         super().update()
 
@@ -132,6 +132,6 @@ class StrongMob(Mob):
 
 class DeathMob(Mob):
     def __init__(self, game, x, y):
-        super().__init__(game, x, y, 99999, TILESIZE, pg.Color(255,0,255), 10 , 4)
+        super().__init__(game, x, y, 99999, TILESIZE, pg.Color(255,0,255), 10 , 999)
     def update(self):
         super().update()

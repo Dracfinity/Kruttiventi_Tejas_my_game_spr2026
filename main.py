@@ -42,11 +42,15 @@ class Game:
         self.clock = pg.time.Clock()
         self.running = True
         self.playing = True
+        self.time = 0;
+        self.currenttime = 0;
+        self.prevtime = 0;
         #setting up a cooldown
         self.game_cooldowns = {
             "mouseup":Cooldown(1000),
             }
         self.load_data()
+        MainMenuModal(self)
     
 
     def load_data(self):
@@ -68,13 +72,15 @@ class Game:
 
     def run(self):
         while self.running:
-            if self.playing:
+            self.currenttime = pg.time.get_ticks()
+            self.dt = self.currenttime-self.prevtime
+            self.prevtime = pg.time.get_ticks()
+            if self.playing == True:
+                self.time += self.dt;
                 #Check for what has happened
                 self.events()
                 #Update Variable
                 self.update()
-            #Delta Time is the change in time
-            self.dt = self.clock.tick() / 1000
             #Draw the new frame
             self.draw()
             
@@ -109,8 +115,10 @@ class Game:
         #immunity frames
         if(self.player.i_frames.ready()):
             if(bool(len(pg.sprite.spritecollide(self.player,self.all_mobs,False)))):
-                
                 self.player.i_frames.start()
+                self.player.health-=1;
+                if(self.player.health == 0):
+                    self.running = False;
         #update all
         self.spawner.update()
         self.player.get_keys()
@@ -119,21 +127,27 @@ class Game:
 
     
     def draw(self):
-        self.screen.fill((0,0,100))
-        self.draw_text(str(pg.time.get_ticks()/1000), 12, WHITE, WIDTH/5, HEIGHT/20)
+        self.screen.fill((0,50,0));
+        self.draw_text(str(self.time/1000), int(TEXTSIZE/2), WHITE, (WIDTH-int(TEXTSIZE/2))/2, HEIGHT/20);
         #Level Screen
-        self.all_sprites.draw(self.screen)
-        pg.draw.rect(self.screen,(100,100,100),(0,0,WIDTH,TILESIZE))
-        pg.draw.rect(self.screen,(100,100,255),(0,0,(self.player.exp/(self.player.level**2))*WIDTH,TILESIZE))
-        pg.display.flip()
+        self.all_sprites.draw(self.screen);
+        #EXP bar
+        pg.draw.rect(self.screen,(100,100,100),(0,0,WIDTH,TILESIZE));
+        pg.draw.rect(self.screen,(100,100,255),(0,0,(self.player.exp/(self.player.level**2))*WIDTH,TILESIZE));
+        self.draw_text("Level:"+str(self.player.level), int(TEXTSIZE/2), WHITE, WIDTH/20, (TILESIZE-int(TEXTSIZE/2))/2);
+        #Health bar
+        pg.draw.rect(self.screen,(100,100,100),(0,TILESIZE,WIDTH,TILESIZE));
+        pg.draw.rect(self.screen,(150,0,0),(0,TILESIZE,(self.player.health/(self.player.maxhealth))*WIDTH,TILESIZE));
+        self.draw_text("Health:"+str(self.player.health), int(TEXTSIZE/2), WHITE, WIDTH/20, (TILESIZE-int(TEXTSIZE/2))/2+TILESIZE);
+        pg.display.flip();
 
     def draw_text(self, text, size, color, x, y):
-        font_name = pg.font.match_font('arial')
-        font = pg.font.Font(font_name, size)
-        text_surface = font.render(text, True, color)
-        text_rect = text_surface.get_rect()
-        text_rect.midtop = (x,y)
-        self.screen.blit(text_surface, text_rect)
+        font_name = pg.font.match_font('arial');
+        font = pg.font.Font(font_name, size);
+        text_surface = font.render(text, True, color);
+        text_rect = text_surface.get_rect();
+        text_rect.midtop = (x,y);
+        self.screen.blit(text_surface, text_rect);
 
 if __name__ == "__main__":
     g = Game()

@@ -1,7 +1,7 @@
 import pygame as pg
 
-WIDTH = 800
-HEIGHT = 600
+WIDTH = 1000
+HEIGHT = 800
 TITLE = "Game Development"
 FPS = 60
 
@@ -16,10 +16,13 @@ BLACK = (0,0,0)
 #General
 FRICTION = 0.95
 TILESIZE = 32
+TEXTSIZE = 32
 
 #Player Values
 PLAYERSPEED = 0.5
 PLAYER_HIT_RECT = pg.Rect(0,0,TILESIZE,TILESIZE)
+BasePLAYERHEALTH = 100;
+PLAYERHEALTH = 100;
 
 #Mobs
 MOBSPEED = 3

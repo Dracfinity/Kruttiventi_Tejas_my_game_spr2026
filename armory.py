@@ -14,18 +14,23 @@ class Armory():
     def __init__(self,game):
         self.owned = [["Rain",1],[None,0],[None,0],[None,0]]
         self.game = game
+        #All options
         self.allWeapons = ["Earthquake","Tsunami","Tornado","Landslide","Plague","Wildfire", "Rain"]
     def upgrade(self,weapon):
+        #How to get the weapon and upgrade it
+        #Check if you have it
         for i in range(len(self.owned)):
             if self.owned[i][0] == weapon:
                 self.owned[i][1] += 1
                 return 0;
+        #If you dont
         for i in range(len(self.owned)):
             if self.owned[i][0] == None:
                 self.owned[i][0] = weapon
                 self.owned[i][1] += 1
                 return 0;
     def getOptions(self):
+        #The possible weapons to upgrade for the LevelUp Modal
         full = True;
         for i in self.owned:
             if i[0] == None:
@@ -36,11 +41,14 @@ class Armory():
             for i in self.owned:
                 if i[1] == 7 and i[0] in self.possible:
                     self.possible.remove(i[0])
-            return sample(self.possible,k=3)
+                results = sample(self.possible,k=3)
+                if self.game.player.level == 1:
+                    results[1]="Hex"
+            return results;
         else:
             self.possible = [x[0] for x in self.owned if x[1] < 7]
             if len(self.possible) > 3:
-                    return sample(self.possible,k=3)
+                return sample(self.possible,k=3);
             else:
                 while len(self.possible) <= 3:
                     self.possible.append("Full")
@@ -56,6 +64,8 @@ class Armory():
         for i in self.owned:
             match(i[0]):
                 case None:
+                    continue;
+                case "Hex":
                     continue;
                 case "Earthquake":
                     if Earthquake.BaseStats["cooldown"].ready():
@@ -412,8 +422,8 @@ class Plague(MassDuration):
 #Basic Starting Weapon, extension of bullet projectile class
 class Rain(BulletProjectile):
     BaseStats = {
-        "dmg": 15,
-        "cooldown": Cooldown(750),
+        "dmg": 5,
+        "cooldown": Cooldown(150),
         "dmgtick": 40,
         "speed": 10,
         "size":TILESIZE/6,
@@ -450,3 +460,4 @@ class Rain(BulletProjectile):
                     self.pierce-=1
                     i.health -= self.dmg
                     self.dmgtick.start()
+

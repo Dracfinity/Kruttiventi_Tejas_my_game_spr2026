@@ -20,6 +20,7 @@ def collide_hit_rect(one,two):
 
 class Player(Sprite):
     def __init__(self, game, x, y):
+        #Basics
         self.groups = game.all_sprites
         Sprite.__init__(self,self.groups)
         self.game = game
@@ -27,8 +28,10 @@ class Player(Sprite):
         self.load_images()
         self.image = self.standing_frames[0]
         self.rect = self.image.get_rect()
+        #Movement
         self.vel = vec(1,0)
         self.pos = vec(x,y) * TILESIZE
+        #Hitbox
         self.hit_rect = PLAYER_HIT_RECT
         #Immunity Frames for damage
         self.i_frames = Cooldown(500)
@@ -42,16 +45,18 @@ class Player(Sprite):
             "idling":False,
             "onground":False,
         }
-        self.stats = {
-            "dmg": 1,
-            "firerate": 100,
-            "speed": 1,
-            "amount": 1,
-        }
+        #Settings imported to be dynamically customizable
+        self.FRICTION = FRICTION;
+        self.SPEED = PLAYERSPEED;
+        self.maxhealth = PLAYERHEALTH;
+        self.health = self.maxhealth;
+        #Armory
         self.armory = Armory(self.game)
         #Experience and Levels
         self.level = 1;
         self.exp = 0;
+        #Health
+        self.health = 100;
         #FireRate
         self.firerate = Cooldown(500)
         self.firerate.start()
@@ -59,52 +64,24 @@ class Player(Sprite):
     def get_keys(self):
         #movement
         keys = pg.key.get_pressed()
-
-        wasdnum = 0
         if keys[pg.K_w]:
-            wasdnum +=1
+            self.vel.y -= PLAYERSPEED*self.SPEED
         if keys[pg.K_a]:
-            wasdnum +=1
+            self.vel.x -= PLAYERSPEED*self.SPEED
         if keys[pg.K_s]:
-            wasdnum +=1
+            self.vel.y += PLAYERSPEED*self.SPEED
         if keys[pg.K_d]:
-            wasdnum +=1
-        match(wasdnum):
-            case 1:
-                accelcoefficient = 1
-            case 2:
-                accelcoefficient = 0.7071
-            case 3:
-                accelcoefficient = 1
-            case 4:
-                accelcoefficient = 0
-        if keys[pg.K_w]:
-            self.vel.y -= PLAYERSPEED * accelcoefficient
-        if keys[pg.K_a]:
-            self.vel.x -= PLAYERSPEED * accelcoefficient
-        if keys[pg.K_s]:
-            self.vel.y += PLAYERSPEED * accelcoefficient
-        if keys[pg.K_d]:
-            self.vel.x += PLAYERSPEED * accelcoefficient
+            self.vel.x += PLAYERSPEED*self.SPEED
 
 
         #Adds Friction
-        self.vel.x *= FRICTION
-        self.vel.y *= FRICTION
+        self.vel.x *= self.FRICTION
+        self.vel.y *= self.FRICTION
 
         #Moves PLAYERSPEED per second
         if(self.vel.x != 0 or self.vel.y != 0):
             self.pos.x += self.vel.x
             self.pos.y += self.vel.y
-
-    def state_handle(self):
-        #Handle States and move around different states
-        if self.vel != vec(0,0):
-            self.state['moving'] = False
-            self.state['idling'] = True
-        else:
-            self.state['moving'] = True
-            self.state['idling'] = False
 
     def update(self):
         #Dynamic Camera System to allow to have the camera follow you
@@ -115,7 +92,6 @@ class Player(Sprite):
         self.rect.x = WIDTH/2
         self.rect.y = HEIGHT/2
         self.levelhandle()
-        self.animate()
         self.armory.handle()
 
     def load_images(self):
@@ -124,18 +100,7 @@ class Player(Sprite):
                                 self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)]
         for frame in self.standing_frames:
             frame.set_colorkey(WHITE)
-        self.dash_frames = [
-            
-        ]
 
-    def animate(self):
-        now = pg.time.get_ticks()
-        #Animation of idling for now
-        if self.state['idling']:
-            if now - self.last_update > 100:
-                self.last_update = now
-                self.current_frame = (self.current_frame + 1) % len(self.standing_frames)
-                self.image = pg.transform.rotate(self.standing_frames[self.current_frame], self.vel.angle_to(vec(1,0)))
     
     def levelhandle(self):
         if(self.exp >= self.level**2):
