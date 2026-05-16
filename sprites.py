@@ -11,23 +11,15 @@ vec = pg.math.Vector2
 
 
 
-def collide_hit_rect(one,two):
-    #detect collisions
-    return one.hit_rect.colliderect(two.rect)
-
-    
-
-
 class Player(Sprite):
     def __init__(self, game, x, y):
         #Basics
         self.groups = game.all_sprites
         Sprite.__init__(self,self.groups)
         self.game = game
-        self.spritesheet = Spritesheet(path.join(self.game.img_dir, "Spritesheet.png"))
-        self.load_images()
-        self.image = self.standing_frames[0]
-        self.rect = self.image.get_rect()
+        self.image = pg.surface.Surface((TILESIZE,TILESIZE))
+        self.rect = pg.rect.Rect(0,0,TILESIZE,TILESIZE)
+        self.image.fill((0,255,255));
         #Movement
         self.vel = vec(1,0)
         self.pos = vec(x,y) * TILESIZE
@@ -55,8 +47,10 @@ class Player(Sprite):
         #Experience and Levels
         self.level = 1;
         self.exp = 0;
+        self.exptolvlup = self.level**3
         #Health
         self.health = 100;
+        self.canHeal = True;
         #FireRate
         self.firerate = Cooldown(500)
         self.firerate.start()
@@ -91,22 +85,17 @@ class Player(Sprite):
         self.hit_rect.centery = self.rect.centery
         self.rect.x = WIDTH/2
         self.rect.y = HEIGHT/2
+        self.game.screen.blit(self.image,self.rect)
         self.levelhandle()
         self.armory.handle()
 
-    def load_images(self):
-        #pull a TILESIZExTILESIZE square out of self.spritesheet
-        self.standing_frames = [self.spritesheet.get_image(0,0,TILESIZE, TILESIZE), 
-                                self.spritesheet.get_image(TILESIZE,0,TILESIZE, TILESIZE)]
-        for frame in self.standing_frames:
-            frame.set_colorkey(WHITE)
-
     
     def levelhandle(self):
-        if(self.exp >= self.level**2):
-            self.exp -= self.level**2;
+        if(self.exp >= self.exptolvlup):
+            self.exp -= self.exptolvlup;
             LevelUp(self.game)
             self.level += 1;
+            self.exptolvlup = self.level**3
 
         
                 

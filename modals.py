@@ -46,6 +46,10 @@ def PauseModal(game):
                 case "Rain":
                     pg.draw.rect(item,(0,100,255),(TILESIZE*0.5,TILESIZE*0.25,TILESIZE,TILESIZE))
                     pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*1.8*weapons[j][1]/6)+TILESIZE*0.1,TILESIZE*0.5))
+                case "Hex":
+                    pg.draw.rect(item,(150,0,255),(TILESIZE*0.5,TILESIZE*0.25,TILESIZE,TILESIZE))
+                    pg.draw.rect(item,(255,255,0),(0,TILESIZE*1.25,(TILESIZE*1.8*weapons[j][1]/6)+TILESIZE*0.1,TILESIZE*0.5))
+            game.screen.blit(item,(TILESIZE*(3*j+1),TILESIZE))
             game.screen.blit(item,(TILESIZE*(3*j+1),TILESIZE))
         pg.display.flip()
         for event in pg.event.get():
@@ -75,15 +79,88 @@ def MainMenuModal(game):
             if event.type == pg.QUIT:
                 pg.quit()
 
+def DeathModal(game):
+    game.playing = False;
+    others = [["#000000",pg.Rect(0,0,WIDTH,HEIGHT)],
+              pg.font.SysFont("arial",50).render("You Died",True,"#ffffffff"),
+            ]
+    buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Restart","self.game.playing = True; self.game.prevtime = pg.time.get_ticks();[i.kill() for i in self.game.all_sprites]; self.game.__init__();self.game.time = 0;self.game.player.__init__(self.game,0,0);",game),
+               Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit Game","pg.quit()",game),]
+    while game.playing == False:
+        mousepos = pg.mouse.get_pos()
+        isdown = pg.mouse.get_pressed()
+        overlay = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
+        
+        pg.draw.rect(overlay,others[0][0],others[0][1])
+        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
+        game.screen.blit(overlay,(0,0))
+        for i in buttons:
+            i.check(mousepos,isdown[0])
+            i.draw()
+        pg.display.flip()
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+
+def WinModalA(game):
+    game.playing = False;
+    others = [["#ffffff",pg.Rect(0,0,WIDTH,HEIGHT)],
+              pg.font.SysFont("arial",50).render("You Win?",True,"#ffffffff"),
+            ]
+    buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Restart","self.game.playing = True; self.game.prevtime = pg.time.get_ticks();[i.kill() for i in self.game.all_sprites]; self.game.__init__();self.game.time = 0;self.game.player.__init__(self.game,0,0);",game),
+               Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit Game","pg.quit()",game),]
+    while game.playing == False:
+        mousepos = pg.mouse.get_pos()
+        isdown = pg.mouse.get_pressed()
+        overlay = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
+        
+        pg.draw.rect(overlay,others[0][0],others[0][1])
+        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
+        game.screen.blit(overlay,(0,0))
+        for i in buttons:
+            i.check(mousepos,isdown[0])
+            i.draw()
+        pg.display.flip()
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+
+def WinModalB(game):
+    game.playing = False;
+    others = [["#ffffff",pg.Rect(0,0,WIDTH,HEIGHT)],
+              pg.font.SysFont("arial",50).render("You have beaten the Reaper, You Win",True,"#ffffffff"),
+            ]
+    buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Restart","self.game.playing = True; self.game.prevtime = pg.time.get_ticks();[i.kill() for i in self.game.all_sprites]; self.game.__init__();self.game.time = 0;self.game.player.__init__(self.game,0,0);",game),
+               Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit Game","pg.quit()",game),]
+    while game.playing == False:
+        mousepos = pg.mouse.get_pos()
+        isdown = pg.mouse.get_pressed()
+        overlay = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
+        
+        pg.draw.rect(overlay,others[0][0],others[0][1])
+        game.screen.blit(others[1],(WIDTH/4,HEIGHT/3))
+        game.screen.blit(overlay,(0,0))
+        for i in buttons:
+            i.check(mousepos,isdown[0])
+            i.draw()
+        pg.display.flip()
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+
 Options = {
     #The Hex just makes you worse until you are level 7, where it super buffs you;
     "Hex":[
-            ["Curses YOU, sets health to 1, only available in the 1st round", "self.game.player.armory.upgrade('Hex');self.game.player.maxhealth=1;self.game.player.health=1;self.game.player.armory.allWeapons.append('Hex')"],
-            ["Upgrade Hex, you now have reversed controls, and move backwards", "self.game.player.armory.upgrade('Hex');self.game.player.SPEED*=-1"],
-            ["Upgrade Hex, you now have to deal with slippery controls, like moving on ice","self.game.player.armory.upgrade('Hex');self.game.player.FRICTION=0.99"],
+            ["Hex: Curses YOU, sets health to 25%, only available in the 1st round", "self.game.player.armory.upgrade('Hex');self.game.player.maxhealth=25;self.game.player.health=1;self.game.player.armory.allWeapons.append('Hex')"],
+            ["Upgrade Hex, you now have hysteria \n reversed controls, so you move backwards", "self.game.player.armory.upgrade('Hex');self.game.player.SPEED*=-1"],
+            ["Upgrade Hex, The ground turns to ice around you \n, you slip around more and stumble and dont slow down when putting down a key","self.game.player.armory.upgrade('Hex');self.game.player.FRICTION=0.98"],
+            ["Upgrade Hex, you now have a virus \n cannot heal","self.game.player.armory.upgrade('Hex');self.game.player.canHeal=False"],
+            ["Upgrade Hex, You now have a blight \n your speed is cut in half","self.game.player.armory.upgrade('Hex');self.game.player.SPEED*=0.5"],
+            ["Upgrade Hex, It seems to be glowing \n It is changing","self.game.player.armory.upgrade('Hex')"],
+            ["Ultimate Hex: Blessing from the Gods \n All debuffs removed, health increase, and Death itself is weakened ","self.game.player.armory.upgrade('Hex');self.game.player.killDeath=True;self.game.player.health = 150;self.game.player.maxhealth = 150;self.game.player.SPEED *= -2;self.game.player.FRICTION = 0.95;self.game.player.canHeal = True;"],
     ],
     "Tornado":[
-            ["A low damage tornado that spins \n around the character","self.game.player.armory.upgrade('Tornado')"],
+            ["Tornado: A low damage area that damages things \n around the character","self.game.player.armory.upgrade('Tornado')"],
             ["Increase Tornado Damage by 3 per hit","self.game.player.armory.upgrade('Tornado');Tornado.BaseStats['dmg']+=3"],
             ["Increase Tornado Size by 50%","self.game.player.armory.upgrade('Tornado');Tornado.BaseStats['size']*=1.5"],
             ["Make Tornado Attack 25% more","self.game.player.armory.upgrade('Tornado');Tornado.BaseStats['dmgtick']*=0.75"],
@@ -92,7 +169,7 @@ Options = {
             ["Ultimate:Slow all enemies \n in the range of the Tornado","self.game.player.armory.upgrade('Tornado');Tornado.BaseStats['ultimate']=True"],
             ],
     "Earthquake":[
-            ["Random, high damage earthquake \n that appear for short times \n at spots on your screen","self.game.player.armory.upgrade('Earthquake')"],
+            ["Earthquake: Random, high damage bursts \n that appear for short times \n at spots on your screen","self.game.player.armory.upgrade('Earthquake')"],
             ["Decrease Earthquake Cooldown by 20%","self.game.player.armory.upgrade('Earthquake');Earthquake.BaseStats['cooldown'].time*=0.8"],
             ["Increase Earthquake Dmg by 20","self.game.player.armory.upgrade('Earthquake');Earthquake.BaseStats['dmg'] += 20"],
             ["Increase Earthquake Size by 50%","self.game.player.armory.upgrade('Earthquake');Earthquake.BaseStats['size'] *= 1.5"],
@@ -101,7 +178,7 @@ Options = {
             ["Ultimate: Slowly increases in dmg \n over its duration","self.game.player.armory.upgrade('Earthquake');Earthquake.BaseStats['ultimate']=True"],
     ],
     "Landslide":[
-            ["Rocks that spin around you, \n sliding in a radius around you","self.game.player.armory.upgrade('Landslide')"],
+            ["Landslide: Rocks that spin around you, \n sliding in a radius around you","self.game.player.armory.upgrade('Landslide')"],
             ["Increase Landslide Damage by 5 per hit","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['dmg']+=5"],
             ["Add 2 to the Amount of Landslides","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['amount']+=2"],
             ["Increase Landslide Spin speed by 100%","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['speed']*=2"],
@@ -110,7 +187,7 @@ Options = {
             ["Ultimate: Adds two radii of \n landslides, spinning twice in opposite directions","self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['ultimate']=True;self.game.player.armory.upgrade('Landslide');Landslide.BaseStats['spinradius']*=2"],
     ],
     "Plague":[
-            ["Flies that appear from you \n and damage things near you","self.game.player.armory.upgrade('Plague')"],
+            ["Plague: Flies that appear from you \n and damage things near you","self.game.player.armory.upgrade('Plague')"],
             ["Decrease Plague Cooldown by 20%","self.game.player.armory.upgrade('Plague');Plague.BaseStats['cooldown'].time*=0.8"],
             ["Increase Fly Speed by 100%","self.game.player.armory.upgrade('Plague');Plague.BaseStats['speed'] *= 2"],
             ["Double the amount of Flies","self.game.player.armory.upgrade('Plague');Plague.BaseStats['amount'] *= 2"],
@@ -119,7 +196,7 @@ Options = {
             ["Ultimate: The Plague is Airborne, \n and poisons all onscreen enemies","self.game.player.armory.upgrade('Plague');Plague.BaseStats['ultimate']=True"],
     ],
     "Tsunami":[
-            ["A Wave that shoots infront of you \n at high speeds, melting enemies","self.game.player.armory.upgrade('Tsunami')"],
+            ["Tsunami: A Wave that shoots infront of you \n at high speeds, melting enemies","self.game.player.armory.upgrade('Tsunami')"],
             ["Decrease Tsunami Cooldown by 20%","self.game.player.armory.upgrade('Tsunami');Tsunami.BaseStats['cooldown'].time*=0.8"],
             ["Increase Tsunami Dmg by 25","self.game.player.armory.upgrade('Tsunami');Tsunami.BaseStats['dmg']+=25"],
             ["Increase Tsunami Width by 100%","self.game.player.armory.upgrade('Tsunami');Tsunami.BaseStats['width']*=0.5"],
@@ -128,7 +205,7 @@ Options = {
             ["Ultimate: Fire another Tsunami behind you","self.game.player.armory.upgrade('Tsunami');Tsunami.BaseStats['ultimate'] = True"],
     ],
     "Wildfire":[
-            ["A Quick Firing Bullet that shoots \n at enemies, burning them, \n dealing Damage over time","self.game.player.armory.upgrade('Wildfire')"],
+            ["Wildfire: A Quick Firing Bullet that shoots \n at enemies, burning them, \n dealing Damage over time","self.game.player.armory.upgrade('Wildfire')"],
             ["Increase Wildfire burn damage by 100%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['burntier']*=2"],
             ["Increase the Wildfire size by 50%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['size']*=1.5"],
             ["Decrease Wildfire Speed by 50%,\n spending more time on screen","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['speed']*=0.5"],

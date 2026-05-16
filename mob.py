@@ -2,45 +2,57 @@ from settings import *
 import pygame as pg
 from utils import *
 from random import randint
-
+from modals import WinModalA,WinModalB
 vec = pg.math.Vector2
 
 class Spawner():
     def __init__(self,game):
         self.time = 0
         self.game = game
-        self.BaseMobCooldown = Cooldown(1000)
+        #Enemies
+        self.WeakMobCooldown = Cooldown(1000)
         self.NormalMobCooldown = Cooldown(5000)
         self.DashMobCooldown = Cooldown(3000)
         self.TankMobCooldown = Cooldown(10000)
         self.StrongMobCooldown = Cooldown(2000)
+
+        #Healthups
+        self.HealthCooldown = Cooldown(20000)
     def update(self):
         self.time = self.game.time;
-        #print(self.handledmobs)
-        if len(self.game.all_mobs) < MOB_CAP:
-            if self.BaseMobCooldown.ready():
-                for i in range(self.getAmount(0,40,3)):
-                    self.spawn(WeakMob)
-                self.BaseMobCooldown.start();
-            if self.NormalMobCooldown.ready():
-                for i in range(self.getAmount(20,20,1)):
-                    self.spawn(NormalMob)
-                self.NormalMobCooldown.start();
-            if self.DashMobCooldown.ready():
-                for i in range(self.getAmount(40,30,2)):
-                    self.spawn(DashMob)
-                self.DashMobCooldown.start();
-            if self.TankMobCooldown.ready():
-                for i in range(self.getAmount(90,5,1)):
-                    self.spawn(TankMob)
-                self.TankMobCooldown.start();
+        #Mob
+        if self.WeakMobCooldown.ready():
+            for i in range(self.getAmount(0,40,1)):
+                self.spawn(WeakMob)
+            self.WeakMobCooldown.start();
+        if self.NormalMobCooldown.ready():
+            for i in range(self.getAmount(10,20,2)):
+                self.spawn(NormalMob)
+            self.NormalMobCooldown.start();
+        if self.DashMobCooldown.ready():
+            for i in range(self.getAmount(30,30,2)):
+                self.spawn(DashMob)
+            self.DashMobCooldown.start();
+        if self.TankMobCooldown.ready():
+            for i in range(self.getAmount(50,5,10)):
+                self.spawn(TankMob)
+            self.TankMobCooldown.start();
         #Cull mobs too far offscreen
         for i in self.game.all_mobs:
             if WIDTH*2<i.rect.x or -WIDTH>i.rect.x or -HEIGHT > i.rect.y or 2*HEIGHT < i.rect.y:
                 i.kill()
 
+        #Health
+        if self.HealthCooldown.ready():
+            self.spawn(Health)
+            self.HealthCooldown.start();
+    
+        for i in self.game.all_powerups:
+            if WIDTH*2<i.rect.x or -WIDTH>i.rect.x or -HEIGHT > i.rect.y or 2*HEIGHT < i.rect.y:
+                i.kill()
+
     def getAmount(self,begintime,maximum,change):
-        return max(0,min(int(self.time/(1000*change))-(begintime*change),maximum))
+        return max(0,min(int(self.time/(1000*change)-(begintime*change)),maximum))
         
     def spawn(self,mob):
         match(randint(0,3)):
@@ -50,9 +62,23 @@ class Spawner():
                 mob(self.game,randint(0,WIDTH),0)
             case 2:
                 mob(self.game,WIDTH,randint(0,HEIGHT))
-            case 4:
+            case 3:
                 mob(self.game,randint(0,WIDTH),HEIGHT)
 
+class Health(Sprite):
+    def __init__(self,game, x, y):
+        self.groups = game.all_sprites, game.all_powerups
+        Sprite.__init__(self,self.groups)
+        self.game = game
+        self.image = pg.Surface((TILESIZE,TILESIZE))
+        self.image.fill((0,0,0))
+        self.rect = self.image.get_rect()
+        self.pos = vec(self.game.player.pos.x-WIDTH/2+x,self.game.player.pos.y-HEIGHT/2+y)
+    def update(self):
+        self.rect.center = (self.pos.x-self.game.player.pos.x+WIDTH/2,self.pos.y-self.game.player.pos.y+HEIGHT/2)
+        self.image.fill((50,0,0))
+        pg.draw.circle(self.image,(255,0,0),(TILESIZE/2,TILESIZE/2),TILESIZE/3);
+        self.game.screen.blit(self.image,self.rect);
 
 class Mob(Sprite):
     def __init__(self,game,x,y,health,size,color,speed,drop):
@@ -75,6 +101,7 @@ class Mob(Sprite):
         #Mob AI
         self.pos.x += ((self.game.player.pos.x-self.pos.x)/vec(self.game.player.pos.x-self.pos.x,self.game.player.pos.y-self.pos.y).magnitude())*MOBSPEED*self.speed
         self.pos.y += ((self.game.player.pos.y-self.pos.y)/vec(self.game.player.pos.x-self.pos.x,self.game.player.pos.y-self.pos.y).magnitude())*MOBSPEED*self.speed
+        #Test for pushing away each other
         #Dynamic Camera Based Position
         self.rect.center = (self.pos.x - Camera.x + (WIDTH+TILESIZE)/2 ,self.pos.y - Camera.y + (HEIGHT+TILESIZE)/2)
         if self.health <= 0:
@@ -114,13 +141,13 @@ class NormalMob(Mob):
 
 class DashMob(Mob):
     def __init__(self, game, x, y):
-        super().__init__(game, x, y, 100, TILESIZE*0.75, pg.Color(50,150,255), 3 , 3)
+        super().__init__(game, x, y, 100, TILESIZE*0.75, pg.Color(50,150,255), 3 , 2)
     def update(self):
         super().update()
 
 class TankMob(Mob):
     def __init__(self, game, x, y):
-        super().__init__(game, x, y, 10000, TILESIZE*3, pg.Color(150,150,150), 0.3 , 50)
+        super().__init__(game, x, y, 10000, TILESIZE*3, pg.Color(150,150,150), 0.3 , 20)
     def update(self):
         super().update()
 
@@ -132,6 +159,12 @@ class StrongMob(Mob):
 
 class DeathMob(Mob):
     def __init__(self, game, x, y):
-        super().__init__(game, x, y, 99999, TILESIZE, pg.Color(255,0,255), 10 , 999)
+        super().__init__(game, x, y, 66666, TILESIZE, pg.Color(0,0,0), 5 , 0)
     def update(self):
+        if self.alive() == False:
+            WinModalB()
+        if pg.sprite.collide_rect(self.rect,self.game.player.rect) and self.game.player.killDeath == False:
+            WinModalA()
+            
+            
         super().update()

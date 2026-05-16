@@ -37,7 +37,7 @@ class Game:
     def __init__(self):
         pg.init()
         # setting up pygame screen with width and height
-        self.screen = pg.display.set_mode((WIDTH, HEIGHT))
+        self.screen = pg.display.set_mode((WIDTH, HEIGHT), pg.DOUBLEBUF)
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
         self.running = True
@@ -45,28 +45,16 @@ class Game:
         self.time = 0;
         self.currenttime = 0;
         self.prevtime = 0;
-        #setting up a cooldown
-        self.game_cooldowns = {
-            "mouseup":Cooldown(1000),
-            }
-        self.load_data()
         MainMenuModal(self)
-    
-
-    def load_data(self):
-        self.game_dir = path.dirname(__file__)
-        self.img_dir = path.join(self.game_dir, 'images')
-        self.wall_img = pg.image.load(path.join(self.img_dir, 'Wall.png')).convert_alpha()
-        print("data has loaded")
 
     
-    #Each New Frame
     def new(self):
         self.all_sprites = pg.sprite.Group()
         self.all_mobs = pg.sprite.Group()
         self.all_walls = pg.sprite.Group()
         self.all_projectiles = pg.sprite.Group()
-        self.player = Player(self, 0,0)
+        self.all_powerups = pg.sprite.Group()
+        self.player = Player(self, 0 ,0)
         self.spawner = Spawner(self)
         self.run()
 
@@ -104,8 +92,8 @@ class Game:
         justpressed = pg.key.get_just_pressed()
         if justpressed[pg.K_p]:
             PauseModal(self)
-        if justpressed[pg.K_l]:
-            LevelUp(self)
+        #if justpressed[pg.K_l]:
+            #LevelUp(self)
     
 
     def quit(self):
@@ -117,8 +105,17 @@ class Game:
             if(bool(len(pg.sprite.spritecollide(self.player,self.all_mobs,False)))):
                 self.player.i_frames.start()
                 self.player.health-=1;
-                if(self.player.health == 0):
-                    self.running = False;
+                if(self.player.health <= 0):
+                    DeathModal(self)
+                    
+        if(bool(len(pg.sprite.spritecollide(self.player,self.all_powerups,True)))):
+                self.player.i_frames.start()
+                if self.player.canHeal == True:
+                    self.player.health+=15;
+                    if self.player.health > self.player.maxhealth:
+                        self.player.health = self.player.maxhealth;
+
+
         #update all
         self.spawner.update()
         self.player.get_keys()
@@ -127,13 +124,14 @@ class Game:
 
     
     def draw(self):
-        self.screen.fill((0,50,0));
-        self.draw_text(str(self.time/1000), int(TEXTSIZE/2), WHITE, (WIDTH-int(TEXTSIZE/2))/2, HEIGHT/20);
+        self.screen.fill((0,50,0))
+        #Time
+        self.draw_text(str(self.time/1000), int(TEXTSIZE), WHITE, (WIDTH-int(TEXTSIZE/2))/2, TILESIZE*3);
         #Level Screen
         self.all_sprites.draw(self.screen);
         #EXP bar
         pg.draw.rect(self.screen,(100,100,100),(0,0,WIDTH,TILESIZE));
-        pg.draw.rect(self.screen,(100,100,255),(0,0,(self.player.exp/(self.player.level**2))*WIDTH,TILESIZE));
+        pg.draw.rect(self.screen,(100,100,255),(0,0,(self.player.exp/(self.player.exptolvlup))*WIDTH,TILESIZE));
         self.draw_text("Level:"+str(self.player.level), int(TEXTSIZE/2), WHITE, WIDTH/20, (TILESIZE-int(TEXTSIZE/2))/2);
         #Health bar
         pg.draw.rect(self.screen,(100,100,100),(0,TILESIZE,WIDTH,TILESIZE));
@@ -152,8 +150,8 @@ class Game:
 if __name__ == "__main__":
     g = Game()
 
-while g.running:
-    g.new()
+#while g.running:
+g.new()
 
 
 pg.quit()

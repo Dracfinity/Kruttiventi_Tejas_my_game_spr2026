@@ -3,7 +3,7 @@ import pygame as pg
 WIDTH = 1000
 HEIGHT = 800
 TITLE = "Game Development"
-FPS = 60
+FPS = 48
 
 # color values,
 # tuple storing RGB values
@@ -19,7 +19,7 @@ TILESIZE = 32
 TEXTSIZE = 32
 
 #Player Values
-PLAYERSPEED = 0.5
+PLAYERSPEED = 0.75
 PLAYER_HIT_RECT = pg.Rect(0,0,TILESIZE,TILESIZE)
 BasePLAYERHEALTH = 100;
 PLAYERHEALTH = 100;

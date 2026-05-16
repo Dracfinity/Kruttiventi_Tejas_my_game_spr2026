@@ -12,7 +12,7 @@ def Distance(x1,y1,x2,y2):
 
 class Armory():
     def __init__(self,game):
-        self.owned = [["Rain",1],[None,0],[None,0],[None,0]]
+        self.owned = [["Earthquake",1],[None,0],[None,0],[None,0]]
         self.game = game
         #All options
         self.allWeapons = ["Earthquake","Tsunami","Tornado","Landslide","Plague","Wildfire", "Rain"]
@@ -129,17 +129,6 @@ class DurationProjectile(BaseProjectile):
     def killcheck(self):
         if self.duration < pg.time.get_ticks()-self.begintime:
             self.kill()
-
-class MassDuration(DurationProjectile):
-    def __init__(self,game,w,h,duration,amount):
-        DurationProjectile.__init__(self,game,game.player.pos.x,game.player.pos.y,WIDTH,HEIGHT,duration)
-        self.projectiles = []
-        for i in range(amount):
-            self.projectiles.append([vec(WIDTH/2,HEIGHT/2),(w,h),vec(0,0)])#Pos,Size,Vel
-    def update(self):
-        for i in self.projectiles:
-            i[0].x += i[2].x
-            i[0].y += i[2].y
         
 class RelativeDuration(DurationProjectile):
     def __init__(self,game,w,h,duration):
@@ -221,7 +210,7 @@ class Earthquake(DurationProjectile):
     BaseStats = {
         "dmg": 25,
         "cooldown": Cooldown(1000),
-        "duration": 200,
+        "duration": 400,
         "dmgtick": 40,
         "size":TILESIZE*5,
         "ultimate": False
@@ -343,7 +332,7 @@ class Tsunami(RelativeDirectionDuration):
     BaseStats = {
         "dmg": 50,
         "cooldown": Cooldown(3000),
-        "duration": 500,
+        "duration": 1000,
         "dmgtick": 40,
         "width": 0.05,
         "ultimate": False,
@@ -373,31 +362,36 @@ class Tsunami(RelativeDirectionDuration):
                     i.health -= self.dmg
                     self.dmgtick.start()
 
-class Plague(MassDuration):
+class Plague():
     BaseStats = {
         "dmg": 5,
         "cooldown": Cooldown(5000),
         "duration": 2000,
         "dmgtick": 40,
         "amount": 10,
-        "speed": 1,
+        "speed": 2,
         "ultimate":False,
     }
     def __init__(self,game):
-        MassDuration.__init__(self,game,10,10,Plague.BaseStats['duration'],Plague.BaseStats['amount'])
+        for i in range(Plague.BaseStats['amount']):
+            PlagueFly(game)
+        
+    
+
+
+class PlagueFly(DurationProjectile):
+    def __init__(self,game):
+        DurationProjectile.__init__(self,game,game.player.pos.x,game.player.pos.y,TILESIZE/4,TILESIZE/4,Plague.BaseStats['duration'])
         self.dmg = Plague.BaseStats['dmg']
         self.dmgtick = Cooldown(Plague.BaseStats['dmgtick'])
-        self.speed = Plague.BaseStats["speed"]
-        for i in self.projectiles:
-            i[2].x += randint(-10,10)/100 * self.speed
-            i[2].y += randint(-10,10)/100 * self.speed
+        self.vel = vec((2*random()-1)*Plague.BaseStats["speed"],(2*random()-1)*Plague.BaseStats["speed"])
     def update(self):
         self.killcheck()
-        MassDuration.update(self)
         self.clear()
-        for i in self.projectiles:
-            pg.draw.rect(self.image,(0,150,0),(i[0],i[1]))
+        self.image.fill((0,255,0))
         self.draw()
+        self.pos.x += self.vel.x
+        self.pos.y += self.vel.y
         if Plague.BaseStats['ultimate'] == True:
             self.ultcollide()
         else:
@@ -405,19 +399,16 @@ class Plague(MassDuration):
     def collide(self):
         if self.dmgtick.ready():
             hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
-            self.mask = pg.mask.from_surface(self.image)
-            for i in hits:
-                if pg.sprite.collide_mask(self,i) != None:
-                    i.health -= self.dmg
-                    self.dmgtick.start()
-    def ultcollide(self):
-        if self.dmgtick.ready():
-            hits = pg.sprite.spritecollide(self,self.game.all_mobs,False)
             for i in hits:
                 i.health -= self.dmg
-                if ["Poison", 0.25] not in i.effects:
-                    i.effects.append(["Poison", 0.25])
                 self.dmgtick.start()
+    def ultcollide(self):
+        if self.dmgtick.ready():
+            for i in self.game.all_mobs:
+                if ["Poison", 0.5] not in i.effects:
+                    i.effects.append(["Poison", 0.5])
+                self.dmgtick.start()
+
 
 #Basic Starting Weapon, extension of bullet projectile class
 class Rain(BulletProjectile):
