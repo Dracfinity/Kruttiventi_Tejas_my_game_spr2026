@@ -79,21 +79,9 @@ class Game:
                 if self.playing:
                     self.playing = False
                 self.running = False
-            """
-            if event.type == pg.MOUSEBUTTONUP:
-                #If the MouseCooldown is ready
-                if self.game_cooldowns["mouseup"].ready():
-                    print("Used Mouse")
-                    #Restart Cooldown
-                    self.game_cooldowns["mouseup"].start()
-                else:
-                    print("not ready yet")
-            """
         justpressed = pg.key.get_just_pressed()
         if justpressed[pg.K_p]:
             PauseModal(self)
-        #if justpressed[pg.K_l]:
-            #LevelUp(self)
     
 
     def quit(self):

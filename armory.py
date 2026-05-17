@@ -12,7 +12,7 @@ def Distance(x1,y1,x2,y2):
 
 class Armory():
     def __init__(self,game):
-        self.owned = [["Earthquake",1],[None,0],[None,0],[None,0]]
+        self.owned = [["Rain",1],[None,0],[None,0],[None,0]]
         self.game = game
         #All options
         self.allWeapons = ["Earthquake","Tsunami","Tornado","Landslide","Plague","Wildfire", "Rain"]

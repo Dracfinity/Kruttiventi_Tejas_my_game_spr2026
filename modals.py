@@ -151,7 +151,7 @@ def WinModalB(game):
 Options = {
     #The Hex just makes you worse until you are level 7, where it super buffs you;
     "Hex":[
-            ["Hex: Curses YOU, sets health to 25%, only available in the 1st round", "self.game.player.armory.upgrade('Hex');self.game.player.maxhealth=25;self.game.player.health=1;self.game.player.armory.allWeapons.append('Hex')"],
+            ["Hex: Curses YOU, sets health to 25%, only available in the 1st round", "self.game.player.armory.upgrade('Hex');self.game.player.maxhealth=25;self.game.player.health=25;self.game.player.armory.allWeapons.append('Hex')"],
             ["Upgrade Hex, you now have hysteria \n reversed controls, so you move backwards", "self.game.player.armory.upgrade('Hex');self.game.player.SPEED*=-1"],
             ["Upgrade Hex, The ground turns to ice around you \n, you slip around more and stumble and dont slow down when putting down a key","self.game.player.armory.upgrade('Hex');self.game.player.FRICTION=0.98"],
             ["Upgrade Hex, you now have a virus \n cannot heal","self.game.player.armory.upgrade('Hex');self.game.player.canHeal=False"],
@@ -159,6 +159,7 @@ Options = {
             ["Upgrade Hex, It seems to be glowing \n It is changing","self.game.player.armory.upgrade('Hex')"],
             ["Ultimate Hex: Blessing from the Gods \n All debuffs removed, health increase, and Death itself is weakened ","self.game.player.armory.upgrade('Hex');self.game.player.killDeath=True;self.game.player.health = 150;self.game.player.maxhealth = 150;self.game.player.SPEED *= -2;self.game.player.FRICTION = 0.95;self.game.player.canHeal = True;"],
     ],
+    #The Tornado
     "Tornado":[
             ["Tornado: A low damage area that damages things \n around the character","self.game.player.armory.upgrade('Tornado')"],
             ["Increase Tornado Damage by 3 per hit","self.game.player.armory.upgrade('Tornado');Tornado.BaseStats['dmg']+=3"],
