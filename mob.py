@@ -15,7 +15,7 @@ class Spawner():
         self.DashMobCooldown = Cooldown(3000)
         self.TankMobCooldown = Cooldown(10000)
         self.StrongMobCooldown = Cooldown(2000)
-
+        self.DeathMobSpawn = Cooldown(10000)
         #Healthups
         self.HealthCooldown = Cooldown(20000)
     def update(self):
@@ -37,6 +37,10 @@ class Spawner():
             for i in range(self.getAmount(50,5,10)):
                 self.spawn(TankMob)
             self.TankMobCooldown.start();
+        if self.DeathMobSpawn.ready():
+            for i in range(self.getAmount(240,1,1)):
+                self.spawn(DeathMob)
+            self.DeathMobSpawn.start();
         #Cull mobs too far offscreen
         for i in self.game.all_mobs:
             if WIDTH*2<i.rect.x or -WIDTH>i.rect.x or -HEIGHT > i.rect.y or 2*HEIGHT < i.rect.y:
@@ -162,9 +166,9 @@ class DeathMob(Mob):
         super().__init__(game, x, y, 66666, TILESIZE, pg.Color(0,0,0), 5 , 0)
     def update(self):
         if self.alive() == False:
-            WinModalB()
-        if pg.sprite.collide_rect(self.rect,self.game.player.rect) and self.game.player.killDeath == False:
-            WinModalA()
+            WinModalB(self.game)
+        if pg.sprite.collide_rect(self,self.game.player) and self.game.player.killDeath == False:
+            WinModalA(self.game)
             
             
         super().update()

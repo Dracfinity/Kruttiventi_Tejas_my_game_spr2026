@@ -51,6 +51,7 @@ class Player(Sprite):
         #Health
         self.health = 100;
         self.canHeal = True;
+        self.killDeath = False;
         #FireRate
         self.firerate = Cooldown(500)
         self.firerate.start()

@@ -6,7 +6,7 @@ from armory import *
 def PauseModal(game):
     game.playing = False;
     others = [["#444444aa",pg.Rect(0,0,WIDTH,HEIGHT)],
-              pg.font.SysFont("arial",50).render("Pause",True,"#ffffffff"),
+              pg.font.SysFont("arial",50).render("Pause",True,(255,255,255)),
             ]
     weapons = game.player.armory.owned
     buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Continue","self.game.playing = True; self.game.prevtime = pg.time.get_ticks()",game),
@@ -17,11 +17,12 @@ def PauseModal(game):
         overlay = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
         
         pg.draw.rect(overlay,others[0][0],others[0][1])
-        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
         game.screen.blit(overlay,(0,0))
+        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
         for i in buttons:
             i.check(mousepos,isdown[0])
             i.draw()
+        #Weapon Slots and level images
         for j in range(len(weapons)):
             item = pg.Surface((TILESIZE*2,TILESIZE*2))
             match(weapons[j][0]):
@@ -59,7 +60,7 @@ def PauseModal(game):
 def MainMenuModal(game):
     game.playing = False;
     others = [["#444444aa",pg.Rect(0,0,WIDTH,HEIGHT)],
-              pg.font.SysFont("arial",50).render("Calamity Mage",True,"#ffffffff"),
+              pg.font.SysFont("arial",50).render("Calamity Mage",True,(255,255,255)),
             ]
     buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Start","self.game.playing = True; self.game.prevtime = pg.time.get_ticks()",game),
                Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit Game","pg.quit()",game),]
@@ -69,8 +70,8 @@ def MainMenuModal(game):
         overlay = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
         
         pg.draw.rect(overlay,others[0][0],others[0][1])
-        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
         game.screen.blit(overlay,(0,0))
+        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
         for i in buttons:
             i.check(mousepos,isdown[0])
             i.draw()
@@ -82,7 +83,7 @@ def MainMenuModal(game):
 def DeathModal(game):
     game.playing = False;
     others = [["#000000",pg.Rect(0,0,WIDTH,HEIGHT)],
-              pg.font.SysFont("arial",50).render("You Died",True,"#ffffffff"),
+              pg.font.SysFont("arial",50).render("You Died",True,(255,255,255)),
             ]
     buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Restart","self.game.playing = True; self.game.prevtime = pg.time.get_ticks();[i.kill() for i in self.game.all_sprites]; self.game.__init__();self.game.time = 0;self.game.player.__init__(self.game,0,0);",game),
                Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit Game","pg.quit()",game),]
@@ -92,8 +93,8 @@ def DeathModal(game):
         overlay = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
         
         pg.draw.rect(overlay,others[0][0],others[0][1])
-        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
         game.screen.blit(overlay,(0,0))
+        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
         for i in buttons:
             i.check(mousepos,isdown[0])
             i.draw()
@@ -102,10 +103,12 @@ def DeathModal(game):
             if event.type == pg.QUIT:
                 pg.quit()
 
+#Modal if the Reaper kills you
+#Used AI to bugfix because rendering order wrong and could not understand on own
 def WinModalA(game):
     game.playing = False;
-    others = [["#ffffff",pg.Rect(0,0,WIDTH,HEIGHT)],
-              pg.font.SysFont("arial",50).render("You Win?",True,"#ffffffff"),
+    others = [["#000000",pg.Rect(0,0,WIDTH,HEIGHT)],
+              pg.font.SysFont("arial",50).render("You Win?",True,(255,255,255)),
             ]
     buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Restart","self.game.playing = True; self.game.prevtime = pg.time.get_ticks();[i.kill() for i in self.game.all_sprites]; self.game.__init__();self.game.time = 0;self.game.player.__init__(self.game,0,0);",game),
                Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit Game","pg.quit()",game),]
@@ -115,8 +118,8 @@ def WinModalA(game):
         overlay = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
         
         pg.draw.rect(overlay,others[0][0],others[0][1])
-        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
         game.screen.blit(overlay,(0,0))
+        game.screen.blit(others[1],(WIDTH/2.5,HEIGHT/3))
         for i in buttons:
             i.check(mousepos,isdown[0])
             i.draw()
@@ -125,10 +128,12 @@ def WinModalA(game):
             if event.type == pg.QUIT:
                 pg.quit()
 
+
+#Modal if the Reaper is killed
 def WinModalB(game):
     game.playing = False;
-    others = [["#ffffff",pg.Rect(0,0,WIDTH,HEIGHT)],
-              pg.font.SysFont("arial",50).render("You have beaten the Reaper, You Win",True,"#ffffffff"),
+    others = [["#000000",pg.Rect(0,0,WIDTH,HEIGHT)],
+              pg.font.SysFont("arial",50).render("You have beaten Death, You Win",True,(255,255,255)),
             ]
     buttons = [Button(WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Restart","self.game.playing = True; self.game.prevtime = pg.time.get_ticks();[i.kill() for i in self.game.all_sprites]; self.game.__init__();self.game.time = 0;self.game.player.__init__(self.game,0,0);",game),
                Button(3*WIDTH/5,11*HEIGHT/20,WIDTH/5,HEIGHT/10,"#888888","#666666","Quit Game","pg.quit()",game),]
@@ -138,8 +143,8 @@ def WinModalB(game):
         overlay = pg.surface.Surface((WIDTH,HEIGHT),pg.SRCALPHA)
         
         pg.draw.rect(overlay,others[0][0],others[0][1])
-        game.screen.blit(others[1],(WIDTH/4,HEIGHT/3))
         game.screen.blit(overlay,(0,0))
+        game.screen.blit(others[1],(WIDTH/4,HEIGHT/3))
         for i in buttons:
             i.check(mousepos,isdown[0])
             i.draw()
@@ -214,8 +219,9 @@ Options = {
             ["Decrease Wildfire Cooldown by 50%","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['cooldown'].time*=0.5"],
             ["Ultimate: Make the wildfire attack \n 3 times in a row","self.game.player.armory.upgrade('Wildfire');Wildfire.BaseStats['ultimate'] = True"],
     ],
+    #Simple Weapon to start
     "Rain":[
-            ["This... isnt supposed to appear \n Get a Rain projectile ","self.game.player.armory.upgrade('Rain')"],
+            ["Get a Rain projectile","self.game.player.armory.upgrade('Rain')"],
             ["Double damage of Rain","self.game.player.armory.upgrade('Rain');Rain.BaseStats['dmg']*=2"],
             ["Increase the Rain pierce by 100%","self.game.player.armory.upgrade('Rain');Rain.BaseStats['pierce']*=2"],
             ["Decrease Rain Cooldown by 50%, \n attacking at double the rate","self.game.player.armory.upgrade('Rain');Rain.BaseStats['cooldown'].time*=0.5"],
@@ -224,7 +230,7 @@ Options = {
             ["Ultimate: Make the Rain's attack \n freeze enemies in place","self.game.player.armory.upgrade('Rain');Rain.BaseStats['ultimate'] = True"],
     ],
     "Full":[
-        ["",""]
+        ["",""],
     ]
 }      
 

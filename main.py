@@ -82,6 +82,9 @@ class Game:
         justpressed = pg.key.get_just_pressed()
         if justpressed[pg.K_p]:
             PauseModal(self)
+        pressed = pg.key.get_pressed()
+        if pressed[pg.K_l]:
+            self.time += 1000;
     
 
     def quit(self):
